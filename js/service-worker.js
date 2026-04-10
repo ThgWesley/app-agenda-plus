@@ -1,5 +1,5 @@
-const CACHE_NAME = 'agendaplus-v1';
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'agenda-plus-v1';
+const ASSETS = [
     './',
     './index.html',
     './css/style.css',
@@ -9,26 +9,17 @@ const ASSETS_TO_CACHE = [
     './js/calendar.js',
     './js/finance.js',
     './js/report.js',
-    './manifest.json',
-    'https://unpkg.com/@phosphor-icons/web',
-    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+    './manifest.json'
 ];
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME)
-        .then((cache) => {
-            return cache.addAll(ASSETS_TO_CACHE);
-        })
+        caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
     );
 });
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', event => {
     event.respondWith(
-        caches.match(event.request)
-        .then((response) => {
-            // Retorna do cache se encontrar, senão faz a requisição na rede
-            return response || fetch(event.request);
-        })
+        caches.match(event.request).then(response => response || fetch(event.request))
     );
 });

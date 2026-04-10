@@ -1,108 +1,90 @@
-const Calendar = {
-    currentDate: new Date(),
-    selectedDate: new Date(),
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
 
-    init: () => {
-        Calendar.render();
-    },
+const today = new Date();
+const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-    render: () => {
-        const year = Calendar.currentDate.getFullYear();
-        const month = Calendar.currentDate.getMonth();
-        
-        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-        document.getElementById('month-year').textContent = `${monthNames[month]} ${year}`;
+function renderCalendar() {
+    const grid = document.getElementById('calendar-days');
+    const title = document.getElementById('month-year');
+    grid.innerHTML = '';
+    
+    const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    title.innerText = `${months[currentMonth]} ${currentYear}`;
 
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        
-        const grid = document.getElementById('calendar-grid');
-        grid.innerHTML = '';
+    const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    
+    const clients = Storage.get('clients');
+    // Cria um Set apenas com as datas que possuem eventos para busca rápida
+    const eventsSet = new Set(clients.map(c => c.date));
 
-        const clients = Storage.getClients();
-        
-        // Espaços vazios do início do mês
-        for (let i = 0; i < firstDay; i++) {
-            const emptyDiv = document.createElement('div');
-            grid.appendChild(emptyDiv);
-        }
-
-        const today = new Date();
-
-        for (let i = 1; i <= daysInMonth; i++) {
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-            const div = document.createElement('div');
-            div.className = 'cal-day';
-            div.textContent = i;
-            div.onclick = () => Calendar.selectDate(new Date(year, month, i));
-
-            // Verifica se é hoje
-            if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-                div.classList.add('today');
-            }
-
-            // Verifica se está selecionado
-            if (i === Calendar.selectedDate.getDate() && month === Calendar.selectedDate.getMonth() && year === Calendar.selectedDate.getFullYear()) {
-                div.classList.add('selected');
-            }
-
-            // Verifica se tem evento neste dia
-            const hasEvent = clients.some(c => c.rawDate === dateStr);
-            if (hasEvent) {
-                div.classList.add('has-event');
-            }
-
-            grid.appendChild(div);
-        }
-
-        Calendar.renderEventsForDate(Calendar.selectedDate);
-    },
-
-    selectDate: (date) => {
-        Calendar.selectedDate = date;
-        Calendar.render();
-    },
-
-    prevMonth: () => {
-        Calendar.currentDate.setMonth(Calendar.currentDate.getMonth() - 1);
-        Calendar.render();
-    },
-
-    nextMonth: () => {
-        Calendar.currentDate.setMonth(Calendar.currentDate.getMonth() + 1);
-        Calendar.render();
-    },
-
-    renderEventsForDate: (date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const targetDate = `${year}-${month}-${day}`;
-
-        const clients = Storage.getClients().filter(c => c.rawDate === targetDate);
-        const container = document.getElementById('daily-events');
-        container.innerHTML = '';
-
-        if (clients.length === 0) {
-            container.innerHTML = '<p class="empty-state">Nenhum evento marcado para hoje.</p>';
-            return;
-        }
-
-        clients.forEach(client => {
-            const div = document.createElement('div');
-            div.className = 'event-card';
-            
-            const img = client.photoBase64 ? `<img src="${client.photoBase64}" class="event-img">` : `<div class="event-img" style="display:flex;align-items:center;justify-content:center;background:#eee"><i class="ph ph-party" style="font-size:24px;color:#aaa"></i></div>`;
-
-            div.innerHTML = `
-                ${img}
-                <div class="event-info">
-                    <h4>${client.clientName}</h4>
-                    <p>${client.kitName} - ${client.mainCategory}</p>
-                    <span class="badge ${client.status.toLowerCase()}">${client.status} - R$ ${client.price.toFixed(2)}</span>
-                </div>
-            `;
-            container.appendChild(div);
-        });
+    // Dias vazios do início (Neumorphism style precisa de divs vazias)
+    for (let i = 0; i < firstDayIndex; i++) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.classList.add('cal-day', 'empty');
+        grid.appendChild(emptyDiv);
     }
-};
+
+    // Preenche os dias
+    for (let i = 1; i <= daysInMonth; i++) {
+        const dayDiv = document.createElement('div');
+        dayDiv.classList.add('cal-day');
+        dayDiv.innerText = i;
+        
+        const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        
+        // Tem evento?
+        if (eventsSet.has(dateStr)) {
+            dayDiv.classList.add('has-event');
+        }
+
+        // É hoje?
+        if (dateStr === todayStr) {
+            dayDiv.classList.add('today');
+        }
+
+        dayDiv.onclick = () => {
+            // Remove ativo anterior
+            const currentActive = grid.querySelector('.cal-day.active');
+            if(currentActive) currentActive.classList.remove('active');
+            
+            // Adiciona ativo novo
+            dayDiv.classList.add('active');
+            loadDailyEvents(dateStr);
+            
+            // Preenche automaticamente a data no formulário do modal para facilitar
+            document.getElementById('event-date').value = dateStr;
+        };
+
+        grid.appendChild(dayDiv);
+    }
+}
+
+document.getElementById('prev-month').onclick = () => { currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; } renderCalendar(); };
+document.getElementById('next-month').onclick = () => { currentMonth++; if (currentMonth > 11) { currentMonth = 0; currentYear++; } renderCalendar(); };
+
+function loadDailyEvents(dateStr) {
+    const list = document.getElementById('events-list');
+    const clients = Storage.get('clients').filter(c => c.date === dateStr);
+    
+    if (clients.length === 0) {
+        list.innerHTML = `<div class="empty-state">Nenhum evento agendado para ${dateStr.split('-').reverse().join('/')}.</div>`;
+        return;
+    }
+    
+    // Renderiza usando o mesmo estilo visual dos cards menores
+    list.innerHTML = clients.map(c => `
+        <div class="client-card" style="margin-top:10px; padding: 12px; box-shadow: none; border: 1px solid var(--border);">
+            <div class="client-photo" style="width:40px; height:40px; font-size:18px;">
+                ${c.photo ? `<img src="${c.photo}">` : '🎈'}
+            </div>
+            <div class="client-info">
+                <h3 style="font-size:14px;">${c.clientName}</h3>
+                <p style="font-size:11px; color: var(--primary); font-weight:500;">${c.kitName} (${c.category})</p>
+                <p class="price-tag" style="font-size:12px; margin:0;">R$ ${c.value.toFixed(2).replace('.',',')}</p>
+            </div>
+            <div class="status-indicator status-${c.status}" style="position:static; width:10px; height:10px;"></div>
+        </div>
+    `).join('');
+}

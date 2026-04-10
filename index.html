@@ -2,221 +2,261 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Agenda Plus</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#6C63FF">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <meta name="theme-color" content="#6200ea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
-    <header class="topbar">
-        <div class="user-info">
-            <img src="assets/default-avatar.png" id="topbar-avatar" alt="Perfil" class="avatar-small">
-            <div>
-                <p class="greeting">Olá,</p>
-                <h1 id="app-title-display">Agenda Plus</h1>
+    <div class="app-container">
+        <header id="app-header">
+            <div class="header-content">
+                <div class="profile-info">
+                    <div class="profile-pic-mini" id="header-profile-pic">🎈</div>
+                    <div class="welcome-text">
+                        <span class="greeting">Olá,</span>
+                        <h1 id="header-title">Agenda Plus</h1>
+                    </div>
+                </div>
+                <button class="icon-btn" id="btn-top-settings">⚙️</button>
             </div>
-        </div>
-        <button class="icon-btn" onclick="UI.openModal('add-modal')">
-            <i class="ph ph-plus-circle"></i>
-        </button>
-    </header>
+        </header>
 
-    <main class="app-content">
-        <section id="tab-calendar" class="tab-pane active">
-            <div class="calendar-header">
-                <button onclick="Calendar.prevMonth()"><i class="ph ph-caret-left"></i></button>
-                <h2 id="month-year"></h2>
-                <button onclick="Calendar.nextMonth()"><i class="ph ph-caret-right"></i></button>
-            </div>
-            <div class="calendar-weekdays">
-                <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
-            </div>
-            <div id="calendar-grid" class="calendar-grid"></div>
+        <main id="main-content">
             
-            <div class="events-list">
-                <h3>Agendamentos do Dia</h3>
-                <div id="daily-events">
-                    <p class="empty-state">Selecione um dia no calendário.</p>
+            <section id="tab-calendar" class="tab-content active">
+                <div class="section-header">
+                    <h2>Sua Agenda</h2>
                 </div>
-            </div>
-        </section>
-
-        <section id="tab-clients" class="tab-pane">
-            <div class="section-header">
-                <h2>Meus Clientes</h2>
-                <button class="btn-primary-small" onclick="Report.downloadReport()"><i class="ph ph-download-simple"></i> Relatório</button>
-            </div>
-            <div class="search-bar">
-                <i class="ph ph-magnifying-glass"></i>
-                <input type="text" id="search-client" placeholder="Buscar cliente..." oninput="UI.renderClients()">
-            </div>
-            <div id="clients-list" class="clients-list"></div>
-        </section>
-
-        <section id="tab-finance" class="tab-pane">
-            <h2>Dashboard Financeiro</h2>
-            <div class="dashboard-cards">
-                <div class="card total">
-                    <i class="ph ph-wallet"></i>
-                    <p>Faturamento Total</p>
-                    <h3 id="dash-total">R$ 0,00</h3>
-                </div>
-                <div class="card pending">
-                    <i class="ph ph-clock-counter-clockwise"></i>
-                    <p>A Receber (Pendentes)</p>
-                    <h3 id="dash-pending">R$ 0,00</h3>
-                </div>
-            </div>
-
-            <div class="split-section">
-                <h3>Divisão de Lucros</h3>
-                <div class="range-container">
-                    <label>Minha Parte: <span id="my-percentage-label">50%</span></label>
-                    <input type="range" id="split-slider" min="0" max="100" value="50" oninput="Finance.updateSplit()">
-                </div>
-                <div class="dashboard-cards split-cards">
-                    <div class="card store">
-                        <p>Caixa da Loja</p>
-                        <h3 id="dash-store">R$ 0,00</h3>
+                <div id="calendar-wrapper" class="glass-card">
+                    <div class="calendar-header">
+                        <button id="prev-month" class="cal-nav-btn">❮</button>
+                        <h3 id="month-year"></h3>
+                        <button id="next-month" class="cal-nav-btn">❯</button>
                     </div>
-                    <div class="card me">
-                        <p>Meu Lucro</p>
-                        <h3 id="dash-me">R$ 0,00</h3>
+                    <div class="calendar-weekdays">
+                        <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                    </div>
+                    <div class="calendar-grid" id="calendar-days"></div>
+                </div>
+                <div class="daily-events" id="daily-events">
+                    <div class="section-header">
+                        <h3>Eventos do Dia</h3>
+                    </div>
+                    <div id="events-list">
+                        <div class="empty-state">Selecione um dia no calendário.</div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section id="tab-profile" class="tab-pane">
-            <div class="profile-header">
-                <div class="avatar-wrapper">
-                    <img src="assets/default-avatar.png" id="profile-avatar" alt="Avatar">
-                    <label for="avatar-upload" class="edit-avatar"><i class="ph ph-camera"></i></label>
-                    <input type="file" id="avatar-upload" accept="image/*" hidden onchange="UI.handleAvatarUpload(event)">
+            <section id="tab-clients" class="tab-content">
+                <div class="section-header">
+                    <h2>Meus Clientes</h2>
+                    <div class="search-bar">
+                        <input type="text" placeholder="Buscar cliente..." id="client-search">
+                    </div>
                 </div>
-                <input type="text" id="edit-app-name" placeholder="Nome da Empresa" onchange="UI.saveProfile()">
-            </div>
+                <div id="clients-list" class="cards-container"></div>
+            </section>
 
-            <div class="settings-group">
-                <h3>Personalização</h3>
-                <div class="color-picker-container">
-                    <label for="primary-color">Cor Principal do App</label>
-                    <input type="color" id="primary-color" value="#6C63FF" onchange="UI.updateColor(event)">
+            <section id="tab-finance" class="tab-content">
+                <div class="section-header">
+                    <h2>Dashboard</h2>
                 </div>
-            </div>
-            
-            <button class="btn-danger" onclick="Storage.clearAllData()">Apagar Todos os Dados</button>
-        </section>
-    </main>
-
-    <nav class="bottom-nav">
-        <a href="#" class="nav-item active" onclick="UI.switchTab('calendar', this)"><i class="ph-fill ph-calendar-blank"></i><span>Agenda</span></a>
-        <a href="#" class="nav-item" onclick="UI.switchTab('clients', this)"><i class="ph-fill ph-users"></i><span>Clientes</span></a>
-        <a href="#" class="nav-item" onclick="UI.switchTab('finance', this)"><i class="ph-fill ph-chart-line-up"></i><span>Finanças</span></a>
-        <a href="#" class="nav-item" onclick="UI.switchTab('profile', this)"><i class="ph-fill ph-user-circle"></i><span>Perfil</span></a>
-    </nav>
-
-    <div id="add-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Novo Agendamento</h2>
-                <button class="close-btn" onclick="UI.closeModal('add-modal')"><i class="ph ph-x"></i></button>
-            </div>
-            <form id="add-form" onsubmit="App.saveEvent(event)">
-                <div class="form-group photo-upload">
-                    <label for="client-photo" class="photo-label">
-                        <i class="ph ph-image"></i> Foto do Kit/Cliente (Opcional)
-                    </label>
-                    <input type="file" id="client-photo" accept="image/*" onchange="UI.previewImage(event)">
-                    <img id="photo-preview" class="hidden">
+                <div class="dashboard-grid">
+                    <div class="dashboard-card main-balance vibrance-gradient">
+                        <h3>Faturamento Pago</h3>
+                        <p class="total-value" id="finance-total">R$ 0,00</p>
+                    </div>
+                    
+                    <div class="dashboard-card glass-card division-card">
+                        <h3>Divisão de Lucros</h3>
+                        <div class="slider-wrapper">
+                            <label for="split-slider">Sua Parte: <span id="my-percentage">50</span>%</label>
+                            <input type="range" id="split-slider" min="0" max="100" value="50">
+                        </div>
+                        <div class="split-results">
+                            <div class="split-box glass-card my-cut">
+                                <h4>Você</h4>
+                                <p id="my-cut">R$ 0,00</p>
+                            </div>
+                            <div class="split-box glass-card store-cut">
+                                <h4>Loja</h4>
+                                <p id="store-cut">R$ 0,00</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="form-group">
-                    <label>Data do Evento</label>
-                    <input type="date" id="event-date" required>
+                <button id="btn-generate-report" class="btn-primary ripple">Baixar Relatório Organizado (PNG)</button>
+                
+                <div id="report-canvas" class="report-hidden">
+                    <h1 id="report-title">Relatório - Agenda Plus</h1>
+                    <div id="report-content"></div>
                 </div>
+            </section>
 
-                <div class="form-group">
-                    <label>Nome do Cliente</label>
-                    <input type="text" id="client-name" placeholder="Ex: Maria Silva" required>
+            <section id="tab-profile" class="tab-content">
+                <div class="section-header">
+                    <h2>Configurações</h2>
                 </div>
-
-                <div class="form-group">
-                    <label>Nome/Tema do Kit</label>
-                    <input type="text" id="kit-name" placeholder="Ex: Festa Safari" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Categoria Principal</label>
-                    <select id="main-category" required>
-                        <option value="" disabled selected>Selecione...</option>
-                        <option value="Pegue e Monte P">Pegue e Monte P</option>
-                        <option value="Pegue e Monte M">Pegue e Monte M</option>
-                        <option value="Pegue e Monte G">Pegue e Monte G</option>
-                        <option value="Mesa P">Mesa P</option>
-                        <option value="Mesa M">Mesa M</option>
-                        <option value="Mesa G">Mesa G</option>
-                    </select>
-                </div>
-
-                <div class="form-group checkbox-group">
-                    <input type="checkbox" id="has-balloons" onchange="UI.toggleBalloons()">
-                    <label for="has-balloons">Adicionar Arco de Balões</label>
-                </div>
-
-                <div id="balloons-section" class="hidden sub-section">
+                <div class="profile-settings glass-card form-container">
+                    <div class="profile-pic-editor">
+                        <div class="profile-pic-wrapper ripple-bg">
+                            <img id="profile-preview" src="" alt="Perfil" style="display:none;">
+                            <div id="profile-emoji">🎈</div>
+                        </div>
+                        <label class="btn-secondary-sm ripple">
+                            Alterar Foto
+                            <input type="file" id="profile-upload" accept="image/*" hidden>
+                        </label>
+                    </div>
+                    
                     <div class="form-group">
-                        <label>Tamanho do Arco</label>
-                        <select id="balloon-size">
-                            <option value="P">Arco P</option>
-                            <option value="M">Arco M</option>
-                            <option value="G">Arco G</option>
-                        </select>
+                        <label>Nome da Empresa</label>
+                        <input type="text" id="company-name-input" value="Agenda Plus">
                     </div>
+                    
                     <div class="form-group">
-                        <label>Cores dos Balões</label>
-                        <input type="text" id="balloon-colors" placeholder="Ex: Azul, Branco e Dourado">
+                        <label>Cor do Aplicativo</label>
+                        <div class="color-picker-wrapper">
+                            <input type="color" id="app-color-input" value="#6200ea">
+                            <span class="color-val">#6200ea</span>
+                        </div>
                     </div>
+                    
+                    <button id="btn-save-profile" class="btn-primary ripple">Salvar Alterações</button>
                 </div>
+            </section>
+        </main>
 
-                <div class="form-group">
-                    <label>Valor Total (R$)</label>
-                    <input type="number" id="event-price" step="0.01" placeholder="0.00" required>
+        <button id="fab-add" class="fab ripple">+</button>
+
+        <nav id="bottom-nav">
+            <button class="nav-item active" data-target="tab-calendar">
+                <span class="nav-icon">📅</span><span class="nav-text">Agenda</span>
+            </button>
+            <button class="nav-item" data-target="tab-clients">
+                <span class="nav-icon">👥</span><span class="nav-text">Clientes</span>
+            </button>
+            <button class="nav-item" data-target="tab-finance">
+                <span class="nav-icon">💰</span><span class="nav-text">Finanças</span>
+            </button>
+            <button class="nav-item" data-target="tab-profile">
+                <span class="nav-icon">⚙️</span><span class="nav-text">Perfil</span>
+            </button>
+        </nav>
+
+        <div id="modal-add" class="modal">
+            <div class="modal-content glass-card">
+                <div class="modal-header">
+                    <div class="modal-handle"></div>
+                    <h2>Novo Agendamento</h2>
+                    <span class="close-modal" id="close-modal">&times;</span>
                 </div>
+                <div class="modal-body">
+                    <form id="add-client-form">
+                        <div class="form-group center-photo">
+                            <label>Foto do Kit (Opcional)</label>
+                            <div class="kit-photo-preview glass-card" id="kit-photo-preview">🎈</div>
+                            <label class="btn-secondary-sm ripple photo-btn">
+                                Selecionar Foto
+                                <input type="file" id="kit-photo" accept="image/*" hidden>
+                            </label>
+                        </div>
 
-                <div class="form-row">
-                    <div class="form-group half">
-                        <label>Forma de Pagto.</label>
-                        <select id="payment-method">
-                            <option value="Pix">Pix</option>
-                            <option value="Cartão">Cartão</option>
-                            <option value="Dinheiro">Dinheiro</option>
-                        </select>
-                    </div>
-                    <div class="form-group half">
-                        <label>Status</label>
-                        <select id="payment-status">
-                            <option value="Pendente">Pendente</option>
-                            <option value="Pago">Pago</option>
-                        </select>
-                    </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nome do Cliente</label>
+                                <input type="text" id="client-name" required placeholder="Nome completo">
+                            </div>
+                            <div class="form-group">
+                                <label>Data do Evento</label>
+                                <input type="date" id="event-date" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Categoria do Kit</label>
+                            <select id="kit-category" required>
+                                <option value="" disabled selected>Selecione...</option>
+                                <optgroup label="Pegue e Monte">
+                                    <option value="Pegue e monte P">P</option>
+                                    <option value="Pegue e monte M">M</option>
+                                    <option value="Pegue e monte G">G</option>
+                                </optgroup>
+                                <optgroup label="Mesas Completas">
+                                    <option value="Mesa P">P</option>
+                                    <option value="Mesa M">M</option>
+                                    <option value="Mesa G">G</option>
+                                </optgroup>
+                                <option value="Arco de balões">🎈 Arco de Balões</option>
+                            </select>
+                        </div>
+
+                        <div id="balloon-options" class="form-sub-group glass-card" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Tamanho</label>
+                                    <select id="balloon-size">
+                                        <option value="P">P</option>
+                                        <option value="M">M</option>
+                                        <option value="G">G</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Cores</label>
+                                    <input type="text" id="balloon-colors" placeholder="Ex: Azul, Prata">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nome do Kit / Tema</label>
+                            <input type="text" id="kit-name" required placeholder="Ex: Jardim Encantado">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Valor Total (R$)</label>
+                                <input type="number" step="0.01" id="kit-value" required placeholder="0,00">
+                            </div>
+                            <div class="form-group">
+                                <label>Forma</label>
+                                <input type="text" id="payment-method" placeholder="Pix, Cartão">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Status de Pagamento</label>
+                            <div class="status-selector">
+                                <input type="radio" name="payment-status" value="pendente" id="status-pend" checked>
+                                <label for="status-pend" class="status-label pendente">Pendente</label>
+                                
+                                <input type="radio" name="payment-status" value="50" id="status-50">
+                                <label for="status-50" class="status-label metade">50% Pago</label>
+                                
+                                <input type="radio" name="payment-status" value="pago" id="status-pago">
+                                <label for="status-pago" class="status-label pago">Pago Total</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary ripple save-btn">Salvar no Calendário</button>
+                    </form>
                 </div>
-
-                <button type="submit" class="btn-primary w-100">Salvar Agendamento</button>
-            </form>
+            </div>
         </div>
     </div>
 
-    <div id="report-container" class="report-container"></div>
-
     <script src="js/storage.js"></script>
+    <script src="js/app.js"></script>
     <script src="js/finance.js"></script>
     <script src="js/calendar.js"></script>
-    <script src="js/ui.js"></script>
     <script src="js/report.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/ui.js"></script>
 </body>
 </html>

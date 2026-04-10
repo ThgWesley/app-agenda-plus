@@ -1,69 +1,36 @@
-const Report = {
-    downloadReport: () => {
-        const clients = Storage.getClients();
-        const settings = Storage.getSettings();
-        const container = document.getElementById('report-container');
-        
-        if(clients.length === 0){
-            alert("Nenhum cliente para gerar relatório.");
-            return;
-        }
+document.getElementById('btn-generate-report').addEventListener('click', () => {
+    const clients = Storage.get('clients');
+    const reportContent = document.getElementById('report-content');
+    
+    let totalVendidos = 0;
+    
+    let html = '<table border="1" style="width:100%; border-collapse: collapse; text-align: left; margin-bottom: 20px;">';
+    html += '<tr><th>Data</th><th>Cliente</th><th>Kit</th><th>Valor</th><th>Status</th></tr>';
+    
+    clients.forEach(c => {
+        html += `<tr>
+            <td style="padding: 8px;">${c.date.split('-').reverse().join('/')}</td>
+            <td style="padding: 8px;">${c.clientName}</td>
+            <td style="padding: 8px;">${c.kitName} (${c.category})</td>
+            <td style="padding: 8px;">R$ ${parseFloat(c.value).toFixed(2).replace('.',',')}</td>
+            <td style="padding: 8px;">${c.status.toUpperCase()}</td>
+        </tr>`;
+        if(c.status === 'pago') totalVendidos += parseFloat(c.value);
+        if(c.status === '50') totalVendidos += (parseFloat(c.value)/2);
+    });
+    html += '</table>';
+    html += `<h2>Total Faturado (Pago/50%): R$ ${totalVendidos.toFixed(2).replace('.',',')}</h2>`;
+    
+    reportContent.innerHTML = html;
 
-        let totalVendido = 0;
+    const canvasDiv = document.getElementById('report-canvas');
+    canvasDiv.style.left = '0px'; // Traz pra tela momentaneamente
 
-        let tableRows = '';
-        clients.forEach(c => {
-            totalVendido += c.price;
-            let extras = c.hasBalloons ? `Arco ${c.balloonSize} (${c.balloonColors})` : '-';
-            tableRows += `
-                <tr>
-                    <td>${c.dateFormatted}</td>
-                    <td>${c.clientName}</td>
-                    <td>${c.kitName}</td>
-                    <td>${c.mainCategory}</td>
-                    <td>${extras}</td>
-                    <td>${c.paymentMethod} - ${c.status}</td>
-                    <td>R$ ${c.price.toFixed(2)}</td>
-                </tr>
-            `;
-        });
-
-        container.innerHTML = `
-            <div class="report-title">Relatório de Eventos e Clientes - ${settings.appName}</div>
-            <table class="report-table">
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Cliente</th>
-                        <th>Kit</th>
-                        <th>Categoria</th>
-                        <th>Balões</th>
-                        <th>Pagamento</th>
-                        <th>Valor</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${tableRows}
-                </tbody>
-            </table>
-            <div class="report-summary">
-                <span>Total de Kits: ${clients.length}</span>
-                <span>Faturamento Global Bruto: R$ ${totalVendido.toFixed(2)}</span>
-            </div>
-        `;
-
-        // Utiliza html2canvas para gerar o PNG
-        html2canvas(container, {
-            scale: 2, // Maior qualidade
-            backgroundColor: "#ffffff"
-        }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `relatorio-${settings.appName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            
-            // Limpa o container para não pesar a memória
-            container.innerHTML = '';
-        });
-    }
-};
+    html2canvas(canvasDiv).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `Relatorio_AgendaPlus_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        canvasDiv.style.left = '-9999px'; // Esconde novamente
+    });
+});
