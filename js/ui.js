@@ -1,8 +1,12 @@
-// --- CONFIGURAÇÕES DO PICKER (INTEGRADO) ---
+// --- CONFIGURAÇÕES DO PICKER (INTEGRADO COM LÓGICA DE BALÕES) ---
 const optionsData = {
     category: [
-        "Pegue e monte P", "Pegue e monte M", "Pegue e monte G",
-        "Mesa P", "Mesa M", "Mesa G", "Arco de balões"
+        "Pegue e monte P", 
+        "Pegue e monte M", 
+        "Pegue e monte G",
+        "Mesa P", 
+        "Mesa M", 
+        "Mesa G"
     ],
     payment: ["Pix", "Dinheiro", "Cartão de Crédito", "Cartão de Débito"]
 };
@@ -33,22 +37,43 @@ function openPicker(type) {
 
 function selectOption(value) {
     if(currentPickerType === 'category') {
-        const catInput = document.getElementById('kit-category'); // ID original do script 1
-        if(catInput) {
-            catInput.value = value;
-            // Dispara manualmente o evento 'change' para mostrar/esconder opções de balão
-            catInput.dispatchEvent(new Event('change'));
-        }
+        const mainCat = document.getElementById('main-category');
         const textDisplay = document.getElementById('selected-category-text');
-        if(textDisplay) textDisplay.innerText = value;
-    } else {
-        const payInput = document.getElementById('payment-method');
-        if(payInput) payInput.value = value;
+        const clearBtn = document.getElementById('btn-clear-category');
+        const arrow = document.getElementById('category-arrow');
         
-        const textDisplay = document.getElementById('selected-payment-text');
+        if(mainCat) mainCat.value = value;
         if(textDisplay) textDisplay.innerText = value;
+
+        // Mostra o X e esconde a seta
+        if(clearBtn) clearBtn.style.display = 'inline-block';
+        if(arrow) arrow.style.display = 'none';
+
+    } else {
+        const payMethod = document.getElementById('payment-method');
+        const payDisplay = document.getElementById('selected-payment-text');
+        
+        if(payMethod) payMethod.value = value;
+        if(payDisplay) payDisplay.innerText = value;
     }
     closePicker();
+}
+
+function clearCategory() {
+    const mainCat = document.getElementById('main-category');
+    const textDisplay = document.getElementById('selected-category-text');
+    const clearBtn = document.getElementById('btn-clear-category');
+    const arrow = document.getElementById('category-arrow');
+
+    if(mainCat) mainCat.value = '';
+    if(textDisplay) textDisplay.innerText = 'Selecionar kit...';
+
+    // Esconde o X e mostra a seta novamente
+    if(clearBtn) clearBtn.style.display = 'none';
+    if(arrow) arrow.style.display = 'inline-block';
+
+    // Reavalia o required do kit-name
+    updateKitNameRequired();
 }
 
 function closePicker() {
@@ -56,9 +81,47 @@ function closePicker() {
     if(picker) picker.style.display = 'none';
 }
 
+// Controla exibição do campo de cores dos balões e o required do kit-name
+function toggleBalloonColors() {
+    const checkbox = document.getElementById('has-balloons');
+    const inputGroup = document.getElementById('balloon-input-group');
+    if(!checkbox || !inputGroup) return;
+
+    if(checkbox.checked) {
+        inputGroup.style.display = 'block';
+        const colorInput = document.getElementById('balloon-colors');
+        if(colorInput) setTimeout(() => colorInput.focus(), 100);
+    } else {
+        inputGroup.style.display = 'none';
+        const colorInput = document.getElementById('balloon-colors');
+        if(colorInput) colorInput.value = '';
+    }
+
+    updateKitNameRequired();
+}
+
+// Atualiza o label e o required do kit-name conforme o contexto
+function updateKitNameRequired() {
+    const checkbox = document.getElementById('has-balloons');
+    const mainCat = document.getElementById('main-category');
+    const kitNameInput = document.getElementById('kit-name');
+    const kitNameLabel = document.getElementById('kit-name-label');
+
+    const apenasArco = checkbox && checkbox.checked && (!mainCat || mainCat.value === '');
+
+    if(apenasArco) {
+        // Arco de balões vendido sozinho: kit-name é opcional
+        if(kitNameInput) kitNameInput.removeAttribute('required');
+        if(kitNameLabel) kitNameLabel.innerText = 'Nome do Kit / Tema (Opcional)';
+    } else {
+        // Qualquer outro caso: obrigatório
+        if(kitNameInput) kitNameInput.setAttribute('required', 'required');
+        if(kitNameLabel) kitNameLabel.innerText = 'Nome do Kit / Tema';
+    }
+}
+
 // --- CONTROLE DE INTERFACE ORIGINAL ---
 
-// Controle de Abas com animação de feedback
 const navItems = document.querySelectorAll('.nav-item');
 const tabs = document.querySelectorAll('.tab-content');
 
@@ -74,18 +137,15 @@ navItems.forEach(item => {
         const targetTab = document.getElementById(target);
         if(targetTab) targetTab.classList.add('active');
         
-        // Gatilhos de renderização
         if (target === 'tab-clients') renderClients();
         if (target === 'tab-finance') typeof updateFinance === 'function' && updateFinance();
         if (target === 'tab-calendar') typeof renderCalendar === 'function' && renderCalendar();
         
-        // Rolagem para o topo ao trocar de aba
         const mainContent = document.getElementById('main-content');
         if(mainContent) mainContent.scrollTop = 0;
     });
 });
 
-// Modal e Formulário
 const modal = document.getElementById('modal-add');
 const fab = document.getElementById('fab-add');
 const closeModal = document.getElementById('close-modal');
@@ -113,21 +173,9 @@ if(topSettings) {
 if(closeModal) closeModal.onclick = fnCloseModal;
 
 window.onclick = (event) => {
-    if (event.target == modal) {
-        fnCloseModal();
-    }
-    // Fechar picker se clicar fora (opcional, conforme lógica do modal)
     const picker = document.getElementById('custom-picker');
+    if (event.target == modal) fnCloseModal();
     if (event.target == picker) closePicker();
-}
-
-// Lógica condicional de balões
-const kitCategory = document.getElementById('kit-category');
-const balloonOptions = document.getElementById('balloon-options');
-if(kitCategory && balloonOptions) {
-    kitCategory.addEventListener('change', (e) => {
-        balloonOptions.style.display = (e.target.value === 'Arco de balões') ? 'block' : 'none';
-    });
 }
 
 // Pesquisa de Clientes
@@ -153,11 +201,14 @@ if(form) {
         submitBtn.disabled = true;
         
         const processAndSave = (base64Img) => {
-            let categoryVal = kitCategory.value;
-            if (categoryVal === 'Arco de balões') {
-                const bSize = document.getElementById('balloon-size').value;
-                const bColor = document.getElementById('balloon-colors').value;
-                categoryVal = `Arco🎈 ${bSize} (${bColor})`;
+            const kitCategory = document.getElementById('main-category');
+            let categoryVal = kitCategory ? kitCategory.value : '';
+            
+            // Se tiver arco de balões marcado, acrescenta as cores na categoria
+            const hasBalloons = document.getElementById('has-balloons');
+            if(hasBalloons && hasBalloons.checked) {
+                const bColor = document.getElementById('balloon-colors') ? document.getElementById('balloon-colors').value : '';
+                categoryVal = categoryVal ? `${categoryVal} + Arco🎈 (${bColor})` : `Arco🎈 (${bColor})`;
             }
             
             const statusChecked = document.querySelector('input[name="payment-status"]:checked');
@@ -180,13 +231,19 @@ if(form) {
             Storage.set('clients', clients);
             
             form.reset();
-            // Reset dos textos do Picker
-            if(document.getElementById('selected-category-text')) document.getElementById('selected-category-text').innerText = 'Selecionar...';
-            if(document.getElementById('selected-payment-text')) document.getElementById('selected-payment-text').innerText = 'Selecionar...';
             
+            // Reset visual completo após salvar
+            if(document.getElementById('selected-category-text')) document.getElementById('selected-category-text').innerText = 'Selecionar kit...';
+            if(document.getElementById('selected-payment-text')) document.getElementById('selected-payment-text').innerText = 'Selecionar pagamento...';
+            if(document.getElementById('balloon-input-group')) document.getElementById('balloon-input-group').style.display = 'none';
+            if(document.getElementById('btn-clear-category')) document.getElementById('btn-clear-category').style.display = 'none';
+            if(document.getElementById('category-arrow')) document.getElementById('category-arrow').style.display = 'inline-block';
+            if(document.getElementById('main-category')) document.getElementById('main-category').value = '';
+            if(document.getElementById('kit-name-label')) document.getElementById('kit-name-label').innerText = 'Nome do Kit / Tema';
+            if(document.getElementById('kit-name')) document.getElementById('kit-name').setAttribute('required', 'required');
+
             const preview = document.getElementById('kit-photo-preview');
             if(preview) preview.innerHTML = '🎈';
-            if(balloonOptions) balloonOptions.style.display = 'none';
             fnCloseModal();
             
             submitBtn.innerText = "Salvar no Calendário";
@@ -200,21 +257,6 @@ if(form) {
             resizeImage(file, processAndSave);
         } else {
             processAndSave(null);
-        }
-    });
-}
-
-// Preview foto do kit
-const kitPhotoInput = document.getElementById('kit-photo');
-if(kitPhotoInput) {
-    kitPhotoInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        const preview = document.getElementById('kit-photo-preview');
-        if (file && preview) {
-            preview.innerHTML = '...';
-            resizeImage(file, (base64) => {
-                preview.innerHTML = base64 ? `<img src="${base64}">` : '🎈';
-            });
         }
     });
 }
@@ -264,101 +306,17 @@ function renderClients(filterTerm = "") {
     `).join('');
 }
 
-// Configurações do Perfil
+// Aplicar Configurações de Perfil
 function applyProfile() {
     const profile = Storage.get('profile');
-    
     document.documentElement.style.setProperty('--primary', profile.color);
     document.documentElement.style.setProperty('--primary-light', profile.color + '22');
     
     const hTitle = document.getElementById('header-title');
-    const cNameInput = document.getElementById('company-name-input');
-    const colorInput = document.getElementById('app-color-input');
-    const colorLabel = document.querySelector('.color-val');
-    const rTitle = document.getElementById('report-title');
-
     if(hTitle) hTitle.innerText = profile.name;
-    if(cNameInput) cNameInput.value = profile.name;
-    if(colorInput) colorInput.value = profile.color;
-    if(colorLabel) colorLabel.innerText = profile.color;
-    if(rTitle) rTitle.innerText = `Relatório - ${profile.name}`;
     
     const themeMeta = document.querySelector('meta[name="theme-color"]');
     if(themeMeta) themeMeta.setAttribute('content', profile.color);
-    
-    const picMini = document.getElementById('header-profile-pic');
-    const picPreview = document.getElementById('profile-preview');
-    const picEmoji = document.getElementById('profile-emoji');
-    
-    if (profile.photo) {
-        if(picMini) picMini.innerHTML = `<img src="${profile.photo}">`;
-        if(picPreview) { picPreview.src = profile.photo; picPreview.style.display = 'block'; }
-        if(picEmoji) picEmoji.style.display = 'none';
-    } else {
-        if(picMini) picMini.innerHTML = '🎈';
-        if(picPreview) picPreview.style.display = 'none';
-        if(picEmoji) picEmoji.style.display = 'block';
-    }
-}
-
-// Real-time color preview
-const colorInp = document.getElementById('app-color-input');
-if(colorInp) {
-    colorInp.addEventListener('input', (e) => {
-        const val = document.querySelector('.color-val');
-        if(val) val.innerText = e.target.value;
-    });
-}
-
-// Upload Foto Perfil
-const profUpload = document.getElementById('profile-upload');
-if(profUpload) {
-    profUpload.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            resizeImage(file, (base64) => {
-                const preview = document.getElementById('profile-preview');
-                const emoji = document.getElementById('profile-emoji');
-                if (base64 && preview) {
-                    preview.src = base64;
-                    preview.style.display = 'block';
-                    if(emoji) emoji.style.display = 'none';
-                    profUpload.dataset.base64 = base64;
-                }
-            });
-        }
-    });
-}
-
-// Botão Salvar Perfil
-const saveProfBtn = document.getElementById('btn-save-profile');
-if(saveProfBtn) {
-    saveProfBtn.addEventListener('click', (e) => {
-        const btn = e.target;
-        const originalBg = btn.style.background;
-        btn.innerText = "Salvando...";
-        
-        const profile = Storage.get('profile');
-        profile.name = document.getElementById('company-name-input').value;
-        profile.color = document.getElementById('app-color-input').value;
-        
-        const newPhoto = document.getElementById('profile-upload').dataset.base64;
-        if (newPhoto) profile.photo = newPhoto;
-        
-        Storage.set('profile', profile);
-        applyProfile();
-        
-        setTimeout(() => {
-            btn.innerText = "Salvo!";
-            const successColor = getComputedStyle(document.documentElement).getPropertyValue('--green').trim() || '#2ed573';
-            btn.style.background = successColor;
-            
-            setTimeout(() => {
-                btn.innerText = "Salvar Alterações";
-                btn.style.background = originalBg;
-            }, 1500);
-        }, 500);
-    });
 }
 
 // Inicialização

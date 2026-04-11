@@ -182,32 +182,36 @@
 
                         <div class="form-group">
                             <label>Categoria do Kit</label>
-                            <div class="custom-select-trigger" id="select-category-trigger" onclick="openPicker('category')">
-                                <span id="selected-category-text">Selecionar categoria...</span>
-                                <i class="arrow-down"></i>
+                            <div style="position: relative; display: flex; align-items: center; gap: 8px;">
+                                <div class="custom-select-trigger" id="select-category-trigger" onclick="openPicker('category')" style="flex: 1; margin: 0;">
+                                    <span id="selected-category-text">Selecionar kit...</span>
+                                    <i class="arrow-down" id="category-arrow"></i>
+                                </div>
+                                <button type="button" id="btn-clear-category" onclick="clearCategory()" 
+                                    style="display:none; background: none; border: none; font-size: 20px; color: #e53935; cursor: pointer; padding: 4px 6px; line-height: 1;">
+                                    &times;
+                                </button>
                             </div>
-                            <input type="hidden" id="main-category" name="main-category">
+                            <input type="hidden" id="main-category" value="">
                         </div>
 
-                        <div id="balloon-options" class="form-sub-group glass-card" style="display: none;">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Tamanho</label>
-                                    <select id="balloon-size">
-                                        <option value="P">P</option>
-                                        <option value="M">M</option>
-                                        <option value="G">G</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Cores</label>
-                                    <input type="text" id="balloon-colors" placeholder="Ex: Azul, Prata">
-                                </div>
+                        <div class="balloon-section" style="margin: 15px 0; padding: 10px; background: rgba(0,0,0,0.02); border-radius: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label style="margin: 0; font-weight: 500;">Incluir Arco de Balões?</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="has-balloons" onchange="toggleBalloonColors()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div id="balloon-input-group" style="display: none; margin-top: 10px;">
+                                <input type="text" id="balloon-colors" placeholder="Digite as cores dos balões (ex: Azul e Branco)" 
+                                       style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box;">
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label>Nome do Kit / Tema</label>
+                            <label id="kit-name-label">Nome do Kit / Tema</label>
                             <input type="text" id="kit-name" required placeholder="Ex: Jardim Encantado">
                         </div>
 
@@ -223,7 +227,7 @@
                                     <span id="selected-payment-text">Selecionar pagamento...</span>
                                     <i class="arrow-down"></i>
                                 </div>
-                                <input type="hidden" id="payment-method" name="payment-method">
+                                <input type="hidden" id="payment-method">
                             </div>
                         </div>
 
@@ -253,12 +257,10 @@
                     <div class="picker-handle"></div>
                     <h3 id="picker-title">Selecionar</h3>
                 </div>
-                <div id="picker-options" class="picker-options-list">
-                    </div>
+                <div id="picker-options" class="picker-options-list"></div>
                 <button class="btn-close-picker" onclick="closePicker()">Cancelar</button>
             </div>
         </div>
-
     </div>
 
     <script src="js/storage.js"></script>
