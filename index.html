@@ -23,7 +23,10 @@
                         <h1 id="header-title">Agenda Plus</h1>
                     </div>
                 </div>
-                <button class="icon-btn" id="btn-top-settings">⚙️</button>
+                <div class="header-actions">
+                    <button class="btn-add-header ripple" id="btn-header-add">+ Novo</button>
+                    <button class="icon-btn" id="btn-top-settings">⚙️</button>
+                </div>
             </div>
         </header>
 
@@ -134,8 +137,6 @@
             </section>
         </main>
 
-        <button id="fab-add" class="fab ripple">+</button>
-
         <nav id="bottom-nav">
             <button class="nav-item active" data-target="tab-calendar">
                 <span class="nav-icon">📅</span><span class="nav-text">Agenda</span>
@@ -151,6 +152,7 @@
             </button>
         </nav>
 
+        <!-- Modal de Novo Agendamento -->
         <div id="modal-add" class="modal">
             <div class="modal-content glass-card">
                 <div class="modal-header">
@@ -247,6 +249,66 @@
 
                         <button type="submit" class="btn-primary ripple save-btn">Salvar no Calendário</button>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Crop de Imagem -->
+        <div id="modal-crop" class="modal">
+            <div class="modal-content" style="background:white; border-radius: 30px 30px 0 0; max-height: 90vh; display:flex; flex-direction:column;">
+                <div class="modal-header">
+                    <div class="modal-handle"></div>
+                    <h2>Ajustar Foto</h2>
+                </div>
+                <div style="flex:1; overflow:hidden; position:relative; background:#111; display:flex; align-items:center; justify-content:center;">
+                    <div id="crop-container" style="position:relative; width:100%; height:320px; overflow:hidden; touch-action:none;">
+                        <img id="crop-image" style="position:absolute; transform-origin: center center; cursor:grab; user-select:none; max-width:none;">
+                    </div>
+                    <div style="position:absolute; top:0; left:0; width:100%; height:320px; pointer-events:none;">
+                        <svg width="100%" height="100%">
+                            <defs>
+                                <mask id="hole">
+                                    <rect width="100%" height="100%" fill="white"/>
+                                    <circle cx="50%" cy="50%" r="130" fill="black"/>
+                                </mask>
+                            </defs>
+                            <rect width="100%" height="100%" fill="rgba(0,0,0,0.55)" mask="url(#hole)"/>
+                            <circle cx="50%" cy="160" r="130" fill="none" stroke="white" stroke-width="2" stroke-dasharray="8 4" opacity="0.6"/>
+                        </svg>
+                    </div>
+                </div>
+                <div style="padding: 15px 20px; display:flex; flex-direction:column; gap:12px; background:white;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:14px;">🔍</span>
+                        <input type="range" id="crop-zoom" min="0.5" max="3" step="0.01" value="1" style="flex:1;">
+                        <span style="font-size:14px;">🔎</span>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button type="button" onclick="cancelCrop()" style="flex:1; padding:14px; border:1px solid #ddd; border-radius:12px; background:white; font-size:14px; cursor:pointer; color:var(--text-sub);">Cancelar</button>
+                        <button type="button" onclick="confirmCrop()" style="flex:1; padding:14px; border:none; border-radius:12px; background:var(--primary); color:white; font-size:14px; font-weight:600; cursor:pointer;">Usar Foto</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Status -->
+        <div id="modal-status" class="modal">
+            <div class="modal-content" style="background:white; border-radius:30px 30px 0 0;">
+                <div class="modal-header">
+                    <div class="modal-handle"></div>
+                    <h2 id="modal-status-name">Alterar Status</h2>
+                    <span class="close-modal" id="close-status-modal">&times;</span>
+                </div>
+                <div style="padding: 20px; display:flex; flex-direction:column; gap:12px; padding-bottom: calc(30px + var(--safe-bottom));">
+                    <button class="status-big-btn status-btn-pendente" onclick="setClientStatus('pendente')">
+                        🔴 Pendente
+                    </button>
+                    <button class="status-big-btn status-btn-50" onclick="setClientStatus('50')">
+                        🟠 50% Pago
+                    </button>
+                    <button class="status-big-btn status-btn-pago" onclick="setClientStatus('pago')">
+                        🟢 Pago Total
+                    </button>
                 </div>
             </div>
         </div>
