@@ -100,29 +100,19 @@ function updateKitNameRequired() {
 
 // --- SISTEMA DE CROP DE IMAGEM ---
 let cropState = {
-    scale: 1,
-    offsetX: 0,
-    offsetY: 0,
-    startX: 0,
-    startY: 0,
-    dragging: false,
-    lastDist: 0,
-    originalSrc: ''
+    scale: 1, offsetX: 0, offsetY: 0,
+    startX: 0, startY: 0, dragging: false,
+    lastDist: 0, originalSrc: ''
 };
 
 function openCropModal(src) {
     const modal = document.getElementById('modal-crop');
     const img = document.getElementById('crop-image');
     const zoomSlider = document.getElementById('crop-zoom');
-    
-    cropState.scale = 1;
-    cropState.offsetX = 0;
-    cropState.offsetY = 0;
+    cropState.scale = 1; cropState.offsetX = 0; cropState.offsetY = 0;
     cropState.originalSrc = src;
-    
     img.src = src;
     zoomSlider.value = 1;
-    
     img.onload = () => {
         const container = document.getElementById('crop-container');
         const cw = container.offsetWidth;
@@ -136,7 +126,6 @@ function openCropModal(src) {
         zoomSlider.value = ratio;
         applyCropTransform();
     };
-    
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
     setupCropEvents();
@@ -155,24 +144,18 @@ function setupCropEvents() {
     const container = document.getElementById('crop-container');
     const img = document.getElementById('crop-image');
     const zoomSlider = document.getElementById('crop-zoom');
-
-    // Remove listeners antigos clonando
     const newContainer = container.cloneNode(false);
     while(container.firstChild) newContainer.appendChild(container.firstChild);
     container.parentNode.replaceChild(newContainer, container);
     newContainer.appendChild(img);
 
-    // Touch drag
     newContainer.addEventListener('touchstart', (e) => {
         if(e.touches.length === 1) {
             cropState.dragging = true;
             cropState.startX = e.touches[0].clientX - cropState.offsetX;
             cropState.startY = e.touches[0].clientY - cropState.offsetY;
         } else if(e.touches.length === 2) {
-            cropState.lastDist = Math.hypot(
-                e.touches[0].clientX - e.touches[1].clientX,
-                e.touches[0].clientY - e.touches[1].clientY
-            );
+            cropState.lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
         }
         e.preventDefault();
     }, { passive: false });
@@ -183,10 +166,7 @@ function setupCropEvents() {
             cropState.offsetY = e.touches[0].clientY - cropState.startY;
             applyCropTransform();
         } else if(e.touches.length === 2) {
-            const dist = Math.hypot(
-                e.touches[0].clientX - e.touches[1].clientX,
-                e.touches[0].clientY - e.touches[1].clientY
-            );
+            const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
             const delta = dist - cropState.lastDist;
             cropState.scale = Math.max(parseFloat(zoomSlider.min), Math.min(parseFloat(zoomSlider.max), cropState.scale + delta * 0.005));
             cropState.lastDist = dist;
@@ -198,7 +178,6 @@ function setupCropEvents() {
 
     newContainer.addEventListener('touchend', () => { cropState.dragging = false; });
 
-    // Mouse drag
     newContainer.addEventListener('mousedown', (e) => {
         cropState.dragging = true;
         cropState.startX = e.clientX - cropState.offsetX;
@@ -211,12 +190,8 @@ function setupCropEvents() {
         cropState.offsetY = e.clientY - cropState.startY;
         applyCropTransform();
     });
-    window.addEventListener('mouseup', () => {
-        cropState.dragging = false;
-        img.style.cursor = 'grab';
-    });
+    window.addEventListener('mouseup', () => { cropState.dragging = false; img.style.cursor = 'grab'; });
 
-    // Zoom slider
     zoomSlider.oninput = () => {
         const container2 = document.getElementById('crop-container');
         const cx = container2.offsetWidth / 2;
@@ -235,45 +210,31 @@ function confirmCrop() {
     const container = document.getElementById('crop-container');
     const cw = container.offsetWidth;
     const ch = container.offsetHeight;
-    const size = 260; // tamanho do guia quadrado
+    const size = 260;
     const cx = cw / 2;
     const cy = ch / 2;
-
     const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
+    canvas.width = size; canvas.height = size;
     const ctx = canvas.getContext('2d');
-
-    // Recorte quadrado sem clip circular
     const sx = (cx - size / 2 - cropState.offsetX) / cropState.scale;
     const sy = (cy - size / 2 - cropState.offsetY) / cropState.scale;
     const sw = size / cropState.scale;
     const sh = size / cropState.scale;
-
     ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
-
     const result = canvas.toDataURL('image/jpeg', 0.85);
-    
     const preview = document.getElementById('kit-photo-preview');
-    if(preview) {
-        preview.innerHTML = `<img src="${result}" style="width:100%; height:100%; object-fit:cover; border-radius:16px;">`;
-    }
-    
+    if(preview) preview.innerHTML = `<img src="${result}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">`;
     let hiddenPhoto = document.getElementById('kit-photo-base64');
     if(!hiddenPhoto) {
         hiddenPhoto = document.createElement('input');
-        hiddenPhoto.type = 'hidden';
-        hiddenPhoto.id = 'kit-photo-base64';
+        hiddenPhoto.type = 'hidden'; hiddenPhoto.id = 'kit-photo-base64';
         document.getElementById('add-client-form').appendChild(hiddenPhoto);
     }
     hiddenPhoto.value = result;
-
     closeCropModal();
 }
 
-function cancelCrop() {
-    closeCropModal();
-}
+function cancelCrop() { closeCropModal(); }
 
 function closeCropModal() {
     const modal = document.getElementById('modal-crop');
@@ -295,22 +256,126 @@ function openStatusModal(clientId, clientName) {
 
 function setClientStatus(newStatus) {
     if(currentStatusClientId === null) return;
-    const clients = Storage.get('clients');
+    const clients = Storage.get('clients') || [];
     const idx = clients.findIndex(c => c.id === currentStatusClientId);
     if(idx !== -1) {
         clients[idx].status = newStatus;
         Storage.set('clients', clients);
         renderClients();
-        Finance.updateDashboard && Finance.updateDashboard();
+        if(typeof Finance !== 'undefined') Finance.updateDashboard();
     }
-    const modal = document.getElementById('modal-status');
-    if(modal) modal.style.display = 'none';
+    document.getElementById('modal-status').style.display = 'none';
     document.body.style.overflow = '';
     currentStatusClientId = null;
 }
 
-// --- CONTROLE DE INTERFACE ---
+// --- SISTEMA DE EDITAR / EXCLUIR CLIENTE ---
+let currentActionClientId = null;
 
+function openClientActions(clientId, clientName) {
+    currentActionClientId = clientId;
+    const modal = document.getElementById('modal-client-actions');
+    const nameEl = document.getElementById('action-client-name');
+    if(nameEl) nameEl.innerText = clientName;
+    if(modal) modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeClientActions() {
+    const modal = document.getElementById('modal-client-actions');
+    if(modal) modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function confirmDeleteClient() {
+    if(currentActionClientId === null) return;
+    if(!confirm('Deseja realmente excluir este agendamento?')) return;
+    let clients = Storage.get('clients') || [];
+    clients = clients.filter(c => c.id !== currentActionClientId);
+    Storage.set('clients', clients);
+    renderClients();
+    if(typeof Finance !== 'undefined') Finance.updateDashboard();
+    if(typeof renderCalendar === 'function') renderCalendar();
+    closeClientActions();
+    currentActionClientId = null;
+}
+
+function openEditModal() {
+    const clients = Storage.get('clients') || [];
+    const client = clients.find(c => c.id === currentActionClientId);
+    if(!client) return;
+
+    closeClientActions();
+
+    // Preenche o formulário com os dados do cliente
+    document.getElementById('client-name').value = client.clientName || '';
+    document.getElementById('event-date').value = client.date || '';
+    document.getElementById('kit-name').value = client.kitName || '';
+    document.getElementById('kit-value').value = client.value || '';
+
+    // Categoria
+    const mainCat = document.getElementById('main-category');
+    const catText = document.getElementById('selected-category-text');
+    const clearBtn = document.getElementById('btn-clear-category');
+    const arrow = document.getElementById('category-arrow');
+    if(client.category) {
+        if(mainCat) mainCat.value = client.category;
+        if(catText) catText.innerText = client.category;
+        if(clearBtn) clearBtn.style.display = 'inline-block';
+        if(arrow) arrow.style.display = 'none';
+    }
+
+    // Pagamento
+    const payMethod = document.getElementById('payment-method');
+    const payText = document.getElementById('selected-payment-text');
+    if(client.method) {
+        if(payMethod) payMethod.value = client.method;
+        if(payText) payText.innerText = client.method;
+    }
+
+    // Status
+    const statusRadio = document.querySelector(`input[name="payment-status"][value="${client.status}"]`);
+    if(statusRadio) statusRadio.checked = true;
+
+    // Foto
+    const preview = document.getElementById('kit-photo-preview');
+    if(client.photo && preview) {
+        preview.innerHTML = `<img src="${client.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">`;
+    }
+    let hiddenPhoto = document.getElementById('kit-photo-base64');
+    if(!hiddenPhoto) {
+        hiddenPhoto = document.createElement('input');
+        hiddenPhoto.type = 'hidden'; hiddenPhoto.id = 'kit-photo-base64';
+        document.getElementById('add-client-form').appendChild(hiddenPhoto);
+    }
+    hiddenPhoto.value = client.photo || '';
+
+    // Muda título e botão do modal
+    document.querySelector('#modal-add h2').innerText = 'Editar Agendamento';
+    const submitBtn = document.querySelector('#add-client-form button[type="submit"]');
+    submitBtn.innerText = 'Salvar Alterações';
+
+    // Guarda o ID sendo editado
+    let editingId = document.getElementById('editing-client-id');
+    if(!editingId) {
+        editingId = document.createElement('input');
+        editingId.type = 'hidden'; editingId.id = 'editing-client-id';
+        document.getElementById('add-client-form').appendChild(editingId);
+    }
+    editingId.value = client.id;
+
+    openModal();
+}
+
+function resetFormToNew() {
+    document.querySelector('#modal-add h2').innerText = 'Novo Agendamento';
+    const submitBtn = document.querySelector('#add-client-form button[type="submit"]');
+    if(submitBtn) submitBtn.innerText = 'Salvar no Calendário';
+    const editingId = document.getElementById('editing-client-id');
+    if(editingId) editingId.value = '';
+}
+
+// --- CONTROLE DE INTERFACE ---
 const navItems = document.querySelectorAll('.nav-item');
 const tabs = document.querySelectorAll('.tab-content');
 
@@ -324,7 +389,7 @@ navItems.forEach(item => {
         const targetTab = document.getElementById(target);
         if(targetTab) targetTab.classList.add('active');
         if (target === 'tab-clients') renderClients();
-        if (target === 'tab-finance') typeof updateFinance === 'function' && updateFinance();
+        if (target === 'tab-finance') typeof Finance !== 'undefined' && Finance.updateDashboard();
         if (target === 'tab-calendar') typeof renderCalendar === 'function' && renderCalendar();
         const mainContent = document.getElementById('main-content');
         if(mainContent) mainContent.scrollTop = 0;
@@ -332,20 +397,21 @@ navItems.forEach(item => {
 });
 
 const modal = document.getElementById('modal-add');
-const closeModal = document.getElementById('close-modal');
+const closeModalBtn = document.getElementById('close-modal');
 const topSettings = document.getElementById('btn-top-settings');
 const btnHeaderAdd = document.getElementById('btn-header-add');
 
 function openModal() {
     if(!modal) return;
     modal.style.display = 'block';
-    document.body.style.overflow = 'hidden'; 
+    document.body.style.overflow = 'hidden';
 }
 
 function fnCloseModal() {
     if(!modal) return;
     modal.style.display = 'none';
     document.body.style.overflow = '';
+    resetFormToNew();
 }
 
 if(btnHeaderAdd) btnHeaderAdd.onclick = openModal;
@@ -355,30 +421,27 @@ if(topSettings) {
         if(profileTab) profileTab.click();
     };
 }
-if(closeModal) closeModal.onclick = fnCloseModal;
+if(closeModalBtn) closeModalBtn.onclick = fnCloseModal;
 
-const closeStatusModal = document.getElementById('close-status-modal');
-if(closeStatusModal) {
-    closeStatusModal.onclick = () => {
-        document.getElementById('modal-status').style.display = 'none';
-        document.body.style.overflow = '';
-        currentStatusClientId = null;
-    };
-}
+document.getElementById('close-status-modal') && (document.getElementById('close-status-modal').onclick = () => {
+    document.getElementById('modal-status').style.display = 'none';
+    document.body.style.overflow = '';
+    currentStatusClientId = null;
+});
+
+document.getElementById('close-actions-modal') && (document.getElementById('close-actions-modal').onclick = closeClientActions);
 
 window.onclick = (event) => {
     const picker = document.getElementById('custom-picker');
     const cropModal = document.getElementById('modal-crop');
     const statusModal = document.getElementById('modal-status');
-    if (event.target == modal) fnCloseModal();
-    if (event.target == picker) closePicker();
-    if (event.target == cropModal) closeCropModal();
-    if (event.target == statusModal) {
-        statusModal.style.display = 'none';
-        document.body.style.overflow = '';
-        currentStatusClientId = null;
-    }
-}
+    const actionsModal = document.getElementById('modal-client-actions');
+    if(event.target == modal) fnCloseModal();
+    if(event.target == picker) closePicker();
+    if(event.target == cropModal) closeCropModal();
+    if(event.target == statusModal) { statusModal.style.display = 'none'; document.body.style.overflow = ''; currentStatusClientId = null; }
+    if(event.target == actionsModal) closeClientActions();
+};
 
 // Preview e crop ao selecionar foto
 const kitPhotoInput = document.getElementById('kit-photo');
@@ -396,12 +459,11 @@ if(kitPhotoInput) {
 const searchInput = document.getElementById('client-search');
 if(searchInput) {
     searchInput.addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase();
-        renderClients(term);
+        renderClients(e.target.value.toLowerCase());
     });
 }
 
-// Salvar Cliente
+// Salvar / Atualizar Cliente
 const form = document.getElementById('add-client-form');
 if(form) {
     form.addEventListener('submit', (e) => {
@@ -410,22 +472,43 @@ if(form) {
         submitBtn.innerText = "Salvando...";
         submitBtn.disabled = true;
 
-        const processAndSave = (base64Img) => {
-            const kitCategory = document.getElementById('main-category');
-            let categoryVal = kitCategory ? kitCategory.value : '';
+        const kitCategory = document.getElementById('main-category');
+        let categoryVal = kitCategory ? kitCategory.value : '';
+        const hasBalloons = document.getElementById('has-balloons');
+        if(hasBalloons && hasBalloons.checked) {
+            const bColor = document.getElementById('balloon-colors') ? document.getElementById('balloon-colors').value : '';
+            categoryVal = categoryVal ? `${categoryVal} + Arco🎈 (${bColor})` : `Arco🎈 (${bColor})`;
+        }
+        const statusChecked = document.querySelector('input[name="payment-status"]:checked');
+        const statusVal = statusChecked ? statusChecked.value : 'pendente';
+        const hiddenPhoto = document.getElementById('kit-photo-base64');
+        const base64 = hiddenPhoto && hiddenPhoto.value ? hiddenPhoto.value : null;
+        const editingId = document.getElementById('editing-client-id');
+        const isEditing = editingId && editingId.value !== '';
 
-            const hasBalloons = document.getElementById('has-balloons');
-            if(hasBalloons && hasBalloons.checked) {
-                const bColor = document.getElementById('balloon-colors') ? document.getElementById('balloon-colors').value : '';
-                categoryVal = categoryVal ? `${categoryVal} + Arco🎈 (${bColor})` : `Arco🎈 (${bColor})`;
+        let clients = Storage.get('clients') || [];
+
+        if(isEditing) {
+            // Atualiza cliente existente
+            const idx = clients.findIndex(c => c.id === parseInt(editingId.value));
+            if(idx !== -1) {
+                clients[idx] = {
+                    ...clients[idx],
+                    clientName: document.getElementById('client-name').value,
+                    date: document.getElementById('event-date').value,
+                    category: categoryVal,
+                    kitName: document.getElementById('kit-name').value,
+                    value: parseFloat(document.getElementById('kit-value').value) || 0,
+                    status: statusVal,
+                    method: document.getElementById('payment-method').value,
+                    photo: base64 !== null ? base64 : clients[idx].photo
+                };
             }
-
-            const statusChecked = document.querySelector('input[name="payment-status"]:checked');
-            const statusVal = statusChecked ? statusChecked.value : 'pendente';
-
-            const newClient = {
+        } else {
+            // Novo cliente
+            clients.push({
                 id: Date.now(),
-                photo: base64Img,
+                photo: base64,
                 clientName: document.getElementById('client-name').value,
                 date: document.getElementById('event-date').value,
                 category: categoryVal,
@@ -433,40 +516,35 @@ if(form) {
                 value: parseFloat(document.getElementById('kit-value').value) || 0,
                 status: statusVal,
                 method: document.getElementById('payment-method').value
-            };
+            });
+        }
 
-            const clients = Storage.get('clients');
-            clients.push(newClient);
-            Storage.set('clients', clients);
+        Storage.set('clients', clients);
+        form.reset();
 
-            form.reset();
+        // Reset visual
+        if(document.getElementById('selected-category-text')) document.getElementById('selected-category-text').innerText = 'Selecionar kit...';
+        if(document.getElementById('selected-payment-text')) document.getElementById('selected-payment-text').innerText = 'Selecionar pagamento...';
+        if(document.getElementById('balloon-input-group')) document.getElementById('balloon-input-group').style.display = 'none';
+        if(document.getElementById('btn-clear-category')) document.getElementById('btn-clear-category').style.display = 'none';
+        if(document.getElementById('category-arrow')) document.getElementById('category-arrow').style.display = 'inline-block';
+        if(document.getElementById('main-category')) document.getElementById('main-category').value = '';
+        if(document.getElementById('kit-name-label')) document.getElementById('kit-name-label').innerText = 'Nome do Kit / Tema';
+        if(document.getElementById('kit-name')) document.getElementById('kit-name').setAttribute('required', 'required');
+        if(document.getElementById('kit-photo-base64')) document.getElementById('kit-photo-base64').value = '';
+        const preview = document.getElementById('kit-photo-preview');
+        if(preview) preview.innerHTML = '🎈';
 
-            // Reset visual completo
-            if(document.getElementById('selected-category-text')) document.getElementById('selected-category-text').innerText = 'Selecionar kit...';
-            if(document.getElementById('selected-payment-text')) document.getElementById('selected-payment-text').innerText = 'Selecionar pagamento...';
-            if(document.getElementById('balloon-input-group')) document.getElementById('balloon-input-group').style.display = 'none';
-            if(document.getElementById('btn-clear-category')) document.getElementById('btn-clear-category').style.display = 'none';
-            if(document.getElementById('category-arrow')) document.getElementById('category-arrow').style.display = 'inline-block';
-            if(document.getElementById('main-category')) document.getElementById('main-category').value = '';
-            if(document.getElementById('kit-name-label')) document.getElementById('kit-name-label').innerText = 'Nome do Kit / Tema';
-            if(document.getElementById('kit-name')) document.getElementById('kit-name').setAttribute('required', 'required');
-            if(document.getElementById('kit-photo-base64')) document.getElementById('kit-photo-base64').value = '';
+        fnCloseModal();
+        submitBtn.innerText = isEditing ? "Salvar Alterações" : "Salvar no Calendário";
+        submitBtn.disabled = false;
 
-            const preview = document.getElementById('kit-photo-preview');
-            if(preview) preview.innerHTML = '🎈';
-            fnCloseModal();
+        renderClients();
+        if(typeof Finance !== 'undefined') Finance.updateDashboard();
+        if(typeof renderCalendar === 'function') renderCalendar();
 
-            submitBtn.innerText = "Salvar no Calendário";
-            submitBtn.disabled = false;
-
-            const clientsTab = document.querySelector('[data-target="tab-clients"]');
-            if(clientsTab) clientsTab.click();
-        };
-
-        // Usa a foto cropada se existir
-        const hiddenPhoto = document.getElementById('kit-photo-base64');
-        const base64 = hiddenPhoto && hiddenPhoto.value ? hiddenPhoto.value : null;
-        processAndSave(base64);
+        const clientsTab = document.querySelector('[data-target="tab-clients"]');
+        if(clientsTab) clientsTab.click();
     });
 }
 
@@ -475,12 +553,12 @@ function renderClients(filterTerm = "") {
     const list = document.getElementById('clients-list');
     if(!list) return;
 
-    let clients = Storage.get('clients');
+    let clients = Storage.get('clients') || [];
 
     if (filterTerm) {
         clients = clients.filter(c =>
-            c.clientName.toLowerCase().includes(filterTerm) ||
-            c.kitName.toLowerCase().includes(filterTerm)
+            (c.clientName || '').toLowerCase().includes(filterTerm) ||
+            (c.kitName || '').toLowerCase().includes(filterTerm)
         );
     }
 
@@ -492,7 +570,6 @@ function renderClients(filterTerm = "") {
     clients.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     const statusLabel = { pendente: 'Pendente', '50': '50% Pago', pago: 'Pago Total' };
-    const statusColor = { pendente: 'var(--red)', '50': 'var(--orange)', pago: 'var(--green)' };
 
     list.innerHTML = clients.map((c, index) => `
         <div class="client-card" style="animation-delay: ${index * 50}ms">
@@ -504,13 +581,16 @@ function renderClients(filterTerm = "") {
             <div class="client-info">
                 <div class="client-header-row">
                     <h3>${c.clientName}</h3>
-                    <span class="event-date-tag">${c.date.split('-').reverse().join('/')}</span>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span class="event-date-tag">${c.date.split('-').reverse().join('/')}</span>
+                        <button class="btn-card-actions" onclick="openClientActions(${c.id}, '${(c.clientName||'').replace(/'/g,"\\'")}')">⋯</button>
+                    </div>
                 </div>
                 <p class="info-line"><span class="info-icon">🎁</span> <span class="kit-theme">${c.kitName || '—'}</span></p>
                 <p class="info-line"><span class="info-icon">🏷️</span> ${c.category || '—'}</p>
                 <div class="client-footer-row">
-                    <p class="price-tag">R$ ${c.value.toFixed(2).replace('.',',')}</p>
-                    <button class="status-chip status-chip-${c.status}" onclick="openStatusModal(${c.id}, '${c.clientName.replace(/'/g,"\\'")}')">
+                    <p class="price-tag">R$ ${(parseFloat(c.value)||0).toFixed(2).replace('.',',')}</p>
+                    <button class="status-chip status-chip-${c.status}" onclick="openStatusModal(${c.id}, '${(c.clientName||'').replace(/'/g,"\\'")}')">
                         ${statusLabel[c.status] || c.status}
                     </button>
                 </div>
@@ -523,6 +603,7 @@ function renderClients(filterTerm = "") {
 // Aplicar Configurações de Perfil
 function applyProfile() {
     const profile = Storage.get('profile');
+    if(!profile) return;
     document.documentElement.style.setProperty('--primary', profile.color);
     document.documentElement.style.setProperty('--primary-light', profile.color + '22');
     const hTitle = document.getElementById('header-title');

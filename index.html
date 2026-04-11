@@ -305,6 +305,25 @@
             </div>
         </div>
 
+        <!-- Modal de Ações do Cliente -->
+        <div id="modal-client-actions" class="modal">
+            <div class="modal-content" style="background:white; border-radius:30px 30px 0 0;">
+                <div class="modal-header">
+                    <div class="modal-handle"></div>
+                    <h2 id="action-client-name">Cliente</h2>
+                    <span class="close-modal" id="close-actions-modal">&times;</span>
+                </div>
+                <div style="padding: 20px; display:flex; flex-direction:column; gap:12px; padding-bottom: calc(30px + var(--safe-bottom));">
+                    <button class="status-big-btn" onclick="openEditModal()" style="background:#f0f0f0; color:#333; border-color:#ddd; font-size:16px;">
+                        ✏️ Editar Agendamento
+                    </button>
+                    <button class="status-big-btn" onclick="confirmDeleteClient()" style="background:rgba(255,71,87,0.08); color:var(--red); border-color:rgba(255,71,87,0.2); font-size:16px;">
+                        🗑️ Excluir Agendamento
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div id="custom-picker" class="picker-overlay">
             <div class="picker-content">
                 <div class="picker-header">
