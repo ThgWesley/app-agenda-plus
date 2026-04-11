@@ -182,20 +182,11 @@
 
                         <div class="form-group">
                             <label>Categoria do Kit</label>
-                            <select id="kit-category" required>
-                                <option value="" disabled selected>Selecione...</option>
-                                <optgroup label="Pegue e Monte">
-                                    <option value="Pegue e monte P">P</option>
-                                    <option value="Pegue e monte M">M</option>
-                                    <option value="Pegue e monte G">G</option>
-                                </optgroup>
-                                <optgroup label="Mesas Completas">
-                                    <option value="Mesa P">P</option>
-                                    <option value="Mesa M">M</option>
-                                    <option value="Mesa G">G</option>
-                                </optgroup>
-                                <option value="Arco de balões">🎈 Arco de Balões</option>
-                            </select>
+                            <div class="custom-select-trigger" id="select-category-trigger" onclick="openPicker('category')">
+                                <span id="selected-category-text">Selecionar categoria...</span>
+                                <i class="arrow-down"></i>
+                            </div>
+                            <input type="hidden" id="main-category" name="main-category">
                         </div>
 
                         <div id="balloon-options" class="form-sub-group glass-card" style="display: none;">
@@ -225,9 +216,14 @@
                                 <label>Valor Total (R$)</label>
                                 <input type="number" step="0.01" id="kit-value" required placeholder="0,00">
                             </div>
+                            
                             <div class="form-group">
-                                <label>Forma</label>
-                                <input type="text" id="payment-method" placeholder="Pix, Cartão">
+                                <label>Forma de Pagamento</label>
+                                <div class="custom-select-trigger" id="select-payment-trigger" onclick="openPicker('payment')">
+                                    <span id="selected-payment-text">Selecionar pagamento...</span>
+                                    <i class="arrow-down"></i>
+                                </div>
+                                <input type="hidden" id="payment-method" name="payment-method">
                             </div>
                         </div>
 
@@ -250,6 +246,19 @@
                 </div>
             </div>
         </div>
+
+        <div id="custom-picker" class="picker-overlay">
+            <div class="picker-content">
+                <div class="picker-header">
+                    <div class="picker-handle"></div>
+                    <h3 id="picker-title">Selecionar</h3>
+                </div>
+                <div id="picker-options" class="picker-options-list">
+                    </div>
+                <button class="btn-close-picker" onclick="closePicker()">Cancelar</button>
+            </div>
+        </div>
+
     </div>
 
     <script src="js/storage.js"></script>

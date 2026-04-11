@@ -1,3 +1,63 @@
+// --- CONFIGURAÇÕES DO PICKER (INTEGRADO) ---
+const optionsData = {
+    category: [
+        "Pegue e monte P", "Pegue e monte M", "Pegue e monte G",
+        "Mesa P", "Mesa M", "Mesa G", "Arco de balões"
+    ],
+    payment: ["Pix", "Dinheiro", "Cartão de Crédito", "Cartão de Débito"]
+};
+
+let currentPickerType = '';
+
+function openPicker(type) {
+    currentPickerType = type;
+    const picker = document.getElementById('custom-picker');
+    const list = document.getElementById('picker-options');
+    const title = document.getElementById('picker-title');
+    
+    if(!picker || !list) return;
+
+    title.innerText = type === 'category' ? 'Escolha o Serviço' : 'Forma de Pagamento';
+    list.innerHTML = '';
+    
+    optionsData[type].forEach(opt => {
+        const div = document.createElement('div');
+        div.className = 'picker-option';
+        div.innerText = opt;
+        div.onclick = () => selectOption(opt);
+        list.appendChild(div);
+    });
+    
+    picker.style.display = 'flex';
+}
+
+function selectOption(value) {
+    if(currentPickerType === 'category') {
+        const catInput = document.getElementById('kit-category'); // ID original do script 1
+        if(catInput) {
+            catInput.value = value;
+            // Dispara manualmente o evento 'change' para mostrar/esconder opções de balão
+            catInput.dispatchEvent(new Event('change'));
+        }
+        const textDisplay = document.getElementById('selected-category-text');
+        if(textDisplay) textDisplay.innerText = value;
+    } else {
+        const payInput = document.getElementById('payment-method');
+        if(payInput) payInput.value = value;
+        
+        const textDisplay = document.getElementById('selected-payment-text');
+        if(textDisplay) textDisplay.innerText = value;
+    }
+    closePicker();
+}
+
+function closePicker() {
+    const picker = document.getElementById('custom-picker');
+    if(picker) picker.style.display = 'none';
+}
+
+// --- CONTROLE DE INTERFACE ORIGINAL ---
+
 // Controle de Abas com animação de feedback
 const navItems = document.querySelectorAll('.nav-item');
 const tabs = document.querySelectorAll('.tab-content');
@@ -56,6 +116,9 @@ window.onclick = (event) => {
     if (event.target == modal) {
         fnCloseModal();
     }
+    // Fechar picker se clicar fora (opcional, conforme lógica do modal)
+    const picker = document.getElementById('custom-picker');
+    if (event.target == picker) closePicker();
 }
 
 // Lógica condicional de balões
@@ -89,7 +152,6 @@ if(form) {
         submitBtn.innerText = "Salvando...";
         submitBtn.disabled = true;
         
-        // Função auxiliar para processar imagem e salvar
         const processAndSave = (base64Img) => {
             let categoryVal = kitCategory.value;
             if (categoryVal === 'Arco de balões') {
@@ -118,6 +180,10 @@ if(form) {
             Storage.set('clients', clients);
             
             form.reset();
+            // Reset dos textos do Picker
+            if(document.getElementById('selected-category-text')) document.getElementById('selected-category-text').innerText = 'Selecionar...';
+            if(document.getElementById('selected-payment-text')) document.getElementById('selected-payment-text').innerText = 'Selecionar...';
+            
             const preview = document.getElementById('kit-photo-preview');
             if(preview) preview.innerHTML = '🎈';
             if(balloonOptions) balloonOptions.style.display = 'none';
@@ -264,7 +330,7 @@ if(profUpload) {
     });
 }
 
-// CORREÇÃO DO BOTÃO SALVAR (Onde estava o erro var(--green))
+// Botão Salvar Perfil
 const saveProfBtn = document.getElementById('btn-save-profile');
 if(saveProfBtn) {
     saveProfBtn.addEventListener('click', (e) => {
@@ -284,7 +350,6 @@ if(saveProfBtn) {
         
         setTimeout(() => {
             btn.innerText = "Salvo!";
-            // Pega a cor do CSS de forma correta via JS
             const successColor = getComputedStyle(document.documentElement).getPropertyValue('--green').trim() || '#2ed573';
             btn.style.background = successColor;
             
