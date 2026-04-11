@@ -235,22 +235,18 @@ function confirmCrop() {
     const container = document.getElementById('crop-container');
     const cw = container.offsetWidth;
     const ch = container.offsetHeight;
-    const radius = 130;
+    const size = 260; // tamanho do guia quadrado
     const cx = cw / 2;
     const cy = ch / 2;
-    const size = radius * 2;
 
     const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext('2d');
 
-    ctx.beginPath();
-    ctx.arc(radius, radius, radius, 0, Math.PI * 2);
-    ctx.clip();
-
-    const sx = (cx - radius - cropState.offsetX) / cropState.scale;
-    const sy = (cy - radius - cropState.offsetY) / cropState.scale;
+    // Recorte quadrado sem clip circular
+    const sx = (cx - size / 2 - cropState.offsetX) / cropState.scale;
+    const sy = (cy - size / 2 - cropState.offsetY) / cropState.scale;
     const sw = size / cropState.scale;
     const sh = size / cropState.scale;
 
@@ -258,13 +254,11 @@ function confirmCrop() {
 
     const result = canvas.toDataURL('image/jpeg', 0.85);
     
-    // Aplica no preview do kit
     const preview = document.getElementById('kit-photo-preview');
     if(preview) {
-        preview.innerHTML = `<img src="${result}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`;
+        preview.innerHTML = `<img src="${result}" style="width:100%; height:100%; object-fit:cover; border-radius:16px;">`;
     }
     
-    // Guarda o base64 em um campo hidden para salvar depois
     let hiddenPhoto = document.getElementById('kit-photo-base64');
     if(!hiddenPhoto) {
         hiddenPhoto = document.createElement('input');
