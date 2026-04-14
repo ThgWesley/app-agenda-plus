@@ -389,7 +389,7 @@ navItems.forEach(item => {
         const targetTab = document.getElementById(target);
         if(targetTab) targetTab.classList.add('active');
         if (target === 'tab-clients') renderClients();
-        if (target === 'tab-finance') typeof Finance !== 'undefined' && Finance.updateDashboard();
+        if (target === 'tab-finance') { typeof Finance !== 'undefined' && Finance.updateDashboard(); }
         if (target === 'tab-calendar') typeof renderCalendar === 'function' && renderCalendar();
         const mainContent = document.getElementById('main-content');
         if(mainContent) mainContent.scrollTop = 0;
