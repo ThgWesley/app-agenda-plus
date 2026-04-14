@@ -289,7 +289,11 @@
                     <form id="add-client-form">
                         <div class="form-group center-photo">
                             <label>Foto do Kit (Opcional)</label>
-                            <div class="kit-photo-preview glass-card" id="kit-photo-preview">🎈</div>
+                            <label for="kit-photo" style="cursor:pointer; display:block;">
+                                <div class="kit-photo-preview glass-card" id="kit-photo-preview">
+                                    <span class="photo-add-hint">📷<br><span style="font-size:11px;color:var(--text-sub);">Toque para adicionar</span></span>
+                                </div>
+                            </label>
                             <label class="btn-secondary-sm ripple photo-btn">
                                 Selecionar Foto
                                 <input type="file" id="kit-photo" accept="image/*" hidden>
@@ -419,6 +423,9 @@
                 <div style="padding: 20px; display:flex; flex-direction:column; gap:12px; padding-bottom: calc(30px + var(--safe-bottom));">
                     <button class="status-big-btn status-btn-pendente" onclick="setClientStatus('pendente')">
                         🔴 Pendente
+                    </button>
+                    <button class="status-big-btn status-btn-credito" onclick="setClientStatus('credito')">
+                        🔵 Crédito de Cancelamento
                     </button>
                     <button class="status-big-btn status-btn-50" onclick="setClientStatus('50')">
                         🟠 50% Pago

@@ -116,6 +116,7 @@ header {
     transition: all 0.2s; white-space: nowrap;
 }
 .status-chip-pendente { background: rgba(255,71,87,0.12); color: var(--red); }
+.status-chip-credito  { background: rgba(0,136,255,0.12); color: #0088ff; }
 .status-chip-50       { background: rgba(255,165,2,0.12);  color: var(--orange); }
 .status-chip-pago     { background: rgba(46,213,115,0.12); color: var(--green); }
 .status-chip:active   { transform: scale(0.95); }
@@ -127,9 +128,36 @@ header {
     cursor: pointer; transition: all 0.2s; text-align: center;
 }
 .status-btn-pendente { background: rgba(255,71,87,0.08); color: var(--red); border-color: rgba(255,71,87,0.2); }
+.status-btn-credito  { background: rgba(0,136,255,0.08); color: #0088ff; border-color: rgba(0,136,255,0.2); }
 .status-btn-50       { background: rgba(255,165,2,0.08);  color: var(--orange); border-color: rgba(255,165,2,0.2); }
 .status-btn-pago     { background: rgba(46,213,115,0.08); color: var(--green); border-color: rgba(46,213,115,0.2); }
 .status-big-btn:active { transform: scale(0.97); }
+
+/* Foto do kit — quadrada menor e clicável */
+.kit-photo-preview {
+    width: 100%;
+    max-width: 180px;
+    aspect-ratio: 1 / 1;
+    border-radius: 16px !important;
+    background: var(--bg) !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    overflow: hidden;
+    margin: 0 auto 10px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.kit-photo-preview:active { opacity: 0.8; }
+.kit-photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 16px;
+}
+.photo-add-hint { text-align: center; line-height: 1.6; }
 
 /* Tabs */
 .tab-content { display: none; animation: slideUp 0.4s var(--ease); }
@@ -435,22 +463,4 @@ nav {
 }
 .notif-row:last-of-type { border-bottom: none; }
 
-/* Foto do kit — quadrada com bordas arredondadas, sem fundo preto */
-.kit-photo-preview {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    border-radius: 16px !important;
-    background: var(--bg) !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 48px;
-    overflow: hidden;
-    margin-bottom: 10px;
-}
-.kit-photo-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 16px;
-}
+/* Foto do kit — ver estilos acima junto ao status */
