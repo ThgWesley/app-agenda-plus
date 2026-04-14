@@ -194,11 +194,70 @@
                         <label>Cor do Aplicativo</label>
                         <div class="color-picker-wrapper">
                             <input type="color" id="app-color-input" value="#6200ea">
-                            <span class="color-val">#6200ea</span>
+                            <span class="color-val" id="color-val-display">#6200ea</span>
                         </div>
                     </div>
                     
                     <button id="btn-save-profile" class="btn-primary ripple">Salvar Alterações</button>
+                </div>
+
+                <!-- Notificações -->
+                <div class="glass-card form-container" style="margin-top:15px;">
+                    <h3 style="font-size:15px; font-weight:600; margin-bottom:15px;">🔔 Notificações</h3>
+                    
+                    <div class="notif-row">
+                        <div>
+                            <div style="font-size:14px; font-weight:500;">Lembrete no dia anterior</div>
+                            <div style="font-size:12px; color:var(--text-sub);">Notificação 1 dia antes do evento</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="notif-day-before">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="notif-row" style="margin-top:12px;">
+                        <div>
+                            <div style="font-size:14px; font-weight:500;">Lembrete no dia do evento</div>
+                            <div style="font-size:12px; color:var(--text-sub);">Notificação às 8h no dia do evento</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="notif-day-of">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div id="notif-status" style="margin-top:12px; font-size:12px; color:var(--text-sub); text-align:center; display:none;"></div>
+                    <button id="btn-save-notif" class="btn-primary ripple" style="margin-top:15px;">Salvar Notificações</button>
+                </div>
+
+                <!-- Instalar App -->
+                <div class="glass-card form-container" style="margin-top:15px;">
+                    <h3 style="font-size:15px; font-weight:600; margin-bottom:6px;">📲 Instalar como App</h3>
+                    <p style="font-size:12px; color:var(--text-sub); margin-bottom:15px;">Instale o Agenda Plus na sua tela inicial para abrir como app, sem barra do navegador.</p>
+
+                    <!-- Botão Android/Chrome (aparece automaticamente) -->
+                    <button id="btn-install-pwa" class="btn-primary ripple" style="display:none; margin-bottom:12px;">⬇ Instalar agora</button>
+                    <p id="pwa-installed-msg" style="display:none; text-align:center; font-size:13px; color:var(--green); margin-bottom:12px; font-weight:600;">✅ App já instalado!</p>
+
+                    <!-- Instrução manual sempre visível -->
+                    <div id="pwa-manual-steps" style="background:rgba(98,0,234,0.06); border-radius:12px; padding:14px;">
+                        <p style="font-size:12px; font-weight:600; color:var(--primary); margin-bottom:8px;">Como instalar no Android (Chrome):</p>
+                        <p style="font-size:12px; color:var(--text-sub); margin-bottom:4px;">1. Toque nos <b>⋮ três pontinhos</b> no canto superior direito</p>
+                        <p style="font-size:12px; color:var(--text-sub); margin-bottom:4px;">2. Toque em <b>"Adicionar à tela inicial"</b></p>
+                        <p style="font-size:12px; color:var(--text-sub);">3. Confirme e o app aparecerá na sua tela! ✅</p>
+                        <div style="border-top:1px solid var(--border); margin:10px 0;"></div>
+                        <p style="font-size:12px; font-weight:600; color:var(--primary); margin-bottom:8px;">Como instalar no iPhone (Safari):</p>
+                        <p style="font-size:12px; color:var(--text-sub); margin-bottom:4px;">1. Toque no ícone <b>□↑ Compartilhar</b></p>
+                        <p style="font-size:12px; color:var(--text-sub);">2. Toque em <b>"Adicionar à Tela de Início"</b> ✅</p>
+                    </div>
+                </div>
+
+                <!-- Exportar para Agenda -->
+                <div class="glass-card form-container" style="margin-top:15px; margin-bottom:20px;">
+                    <h3 style="font-size:15px; font-weight:600; margin-bottom:6px;">📅 Exportar para Google Agenda</h3>
+                    <p style="font-size:12px; color:var(--text-sub); margin-bottom:15px;">Baixe um arquivo .ics com todos os seus eventos e importe no Google Agenda, Apple Calendar ou qualquer outro app de calendário.</p>
+                    <button id="btn-export-ics" class="btn-primary ripple" style="background:var(--bg); color:var(--primary); border:2px solid var(--primary); box-shadow:none;">📥 Baixar arquivo .ics</button>
                 </div>
             </section>
         </main>
