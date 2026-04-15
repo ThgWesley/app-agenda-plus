@@ -72,19 +72,27 @@ function loadDailyEvents(dateStr) {
         list.innerHTML = `<div class="empty-state">Nenhum evento agendado para ${dateStr.split('-').reverse().join('/')}.</div>`;
         return;
     }
+
+    const statusColors = { pendente: 'var(--red)', '50': 'var(--orange)', pago: 'var(--green)', credito: '#0088ff' };
     
-    // Renderiza usando o mesmo estilo visual dos cards menores
     list.innerHTML = clients.map(c => `
         <div class="client-card" style="margin-top:10px; padding: 12px; box-shadow: none; border: 1px solid var(--border);">
             <div class="client-photo" style="width:40px; height:40px; font-size:18px;">
                 ${c.photo ? `<img src="${c.photo}">` : '🎈'}
             </div>
-            <div class="client-info">
-                <h3 style="font-size:14px;">${c.clientName}</h3>
-                <p style="font-size:11px; color: var(--primary); font-weight:500;">${c.kitName} (${c.category})</p>
-                <p class="price-tag" style="font-size:12px; margin:0;">R$ ${c.value.toFixed(2).replace('.',',')}</p>
+            <div class="client-info" style="flex:1;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+                    <h3 style="font-size:14px; margin:0;">${c.clientName}</h3>
+                    <button class="btn-card-actions" onclick="openClientActions(${c.id}, '${(c.clientName||'').replace(/'/g,"\\'")}')">⋯</button>
+                </div>
+                <p style="font-size:11px; color: var(--primary); font-weight:500; margin:2px 0;">${c.kitName} (${c.category})</p>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px;">
+                    <p class="price-tag" style="font-size:12px; margin:0;">R$ ${(parseFloat(c.value)||0).toFixed(2).replace('.',',')}</p>
+                    <button onclick="openStatusModal(${c.id}, '${(c.clientName||'').replace(/'/g,"\\'")}')}" 
+                        style="width:22px; height:22px; border-radius:50%; border:2px solid white; box-shadow:0 2px 6px rgba(0,0,0,0.25); background:${statusColors[c.status]||'var(--red)'}; cursor:pointer; padding:0; flex-shrink:0;">
+                    </button>
+                </div>
             </div>
-            <div class="status-indicator status-${c.status}" style="position:static; width:10px; height:10px;"></div>
         </div>
     `).join('');
 }

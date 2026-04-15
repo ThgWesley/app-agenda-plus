@@ -251,6 +251,7 @@ h3 { font-size: 16px; font-weight: 600; color: var(--text-sub); margin-bottom: 1
 .status-pendente { background-color: var(--red); }
 .status-50 { background-color: var(--orange); }
 .status-pago { background-color: var(--green); }
+.status-credito { background-color: #0088ff; }
 
 .client-info { flex: 1; }
 .client-header-row { display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;}
@@ -464,3 +465,13 @@ nav {
 .notif-row:last-of-type { border-bottom: none; }
 
 /* Foto do kit — ver estilos acima junto ao status */
+
+/* Search + Filter row */
+.search-filter-row { display:flex; align-items:center; gap:8px; margin-bottom:0; }
+.btn-filter-toggle { position:relative; flex-shrink:0; width:44px; height:44px; border-radius:12px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:var(--shadow-soft); }
+.filter-badge { position:absolute; top:6px; right:6px; font-size:8px; color:var(--primary); line-height:1; }
+.filter-panel { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:14px; margin-top:10px; box-shadow:var(--shadow-soft); }
+.filter-section-label { font-size:11px; font-weight:600; color:var(--text-sub); text-transform:uppercase; letter-spacing:0.5px; margin:0 0 8px 2px; }
+.filter-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.filter-chip { padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--bg); font-size:12px; font-weight:500; color:var(--text-sub); cursor:pointer; transition:all 0.15s; }
+.filter-chip.active { background:var(--primary); color:white; border-color:var(--primary); }

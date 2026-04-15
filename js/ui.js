@@ -112,18 +112,19 @@ function openCropModal(src) {
     cropState.scale = 1; cropState.offsetX = 0; cropState.offsetY = 0;
     cropState.originalSrc = src;
     img.src = src;
-    zoomSlider.value = 1;
     img.onload = () => {
         const container = document.getElementById('crop-container');
         const cw = container.offsetWidth;
         const ch = container.offsetHeight;
-        const ratio = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
-        cropState.scale = ratio;
-        cropState.offsetX = (cw - img.naturalWidth * ratio) / 2;
-        cropState.offsetY = (ch - img.naturalHeight * ratio) / 2;
-        zoomSlider.min = ratio * 0.9;
-        zoomSlider.max = ratio * 4;
-        zoomSlider.value = ratio;
+        // Scale so image FULLY covers the container (cover, not contain)
+        const scaleToFill = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+        cropState.scale = scaleToFill;
+        cropState.offsetX = (cw - img.naturalWidth * scaleToFill) / 2;
+        cropState.offsetY = (ch - img.naturalHeight * scaleToFill) / 2;
+        // Min zoom = scaleToFill (image always fills container), max = 4x
+        zoomSlider.min = scaleToFill;
+        zoomSlider.max = scaleToFill * 4;
+        zoomSlider.value = scaleToFill;
         applyCropTransform();
     };
     modal.style.display = 'block';
@@ -549,7 +550,7 @@ if(form) {
 }
 
 // Renderizar lista de Clientes
-function renderClients(filterTerm = "") {
+function renderClients(filterTerm = "", filterStatus = null, filterCategory = null) {
     const list = document.getElementById('clients-list');
     if(!list) return;
 
@@ -562,14 +563,26 @@ function renderClients(filterTerm = "") {
         );
     }
 
+    // Usar estado global de filtros se não passado
+    if (filterStatus === null) filterStatus = window._filterStatus || '';
+    if (filterCategory === null) filterCategory = window._filterCategory || '';
+
+    if (filterStatus) {
+        clients = clients.filter(c => c.status === filterStatus);
+    }
+
+    if (filterCategory) {
+        clients = clients.filter(c => (c.category || '').includes(filterCategory));
+    }
+
     if (clients.length === 0) {
-        list.innerHTML = `<div class="empty-state">${filterTerm ? 'Nenhum cliente encontrado.' : 'Nenhum cliente cadastrado.'}</div>`;
+        list.innerHTML = `<div class="empty-state">${filterTerm || filterStatus || filterCategory ? 'Nenhum cliente encontrado.' : 'Nenhum cliente cadastrado.'}</div>`;
         return;
     }
 
     clients.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    const statusLabel = { pendente: 'Pendente', '50': '50% Pago', pago: 'Pago Total' };
+    const statusLabel = { pendente: 'Pendente', '50': '50% Pago', pago: 'Pago Total', credito: 'Crédito' };
 
     list.innerHTML = clients.map((c, index) => `
         <div class="client-card" style="animation-delay: ${index * 50}ms">
@@ -583,14 +596,14 @@ function renderClients(filterTerm = "") {
                     <h3>${c.clientName}</h3>
                     <div style="display:flex; align-items:center; gap:6px;">
                         <span class="event-date-tag">${c.date.split('-').reverse().join('/')}</span>
-                        <button class="btn-card-actions" onclick="openClientActions(${c.id}, '${(c.clientName||'').replace(/'/g,"\\'")}')">⋯</button>
+                        <button class="btn-card-actions" onclick="openClientActions(${c.id}, '${(c.clientName||'').replace(/'/g,"\'")}')">⋯</button>
                     </div>
                 </div>
                 <p class="info-line"><span class="info-icon">🎁</span> <span class="kit-theme">${c.kitName || '—'}</span></p>
                 <p class="info-line"><span class="info-icon">🏷️</span> ${c.category || '—'}</p>
                 <div class="client-footer-row">
                     <p class="price-tag">R$ ${(parseFloat(c.value)||0).toFixed(2).replace('.',',')}</p>
-                    <button class="status-chip status-chip-${c.status}" onclick="openStatusModal(${c.id}, '${(c.clientName||'').replace(/'/g,"\\'")}')">
+                    <button class="status-chip status-chip-${c.status}" onclick="openStatusModal(${c.id}, '${(c.clientName||'').replace(/'/g,"\'")}')">
                         ${statusLabel[c.status] || c.status}
                     </button>
                 </div>
@@ -610,7 +623,143 @@ function applyProfile() {
     if(hTitle) hTitle.innerText = profile.name;
     const themeMeta = document.querySelector('meta[name="theme-color"]');
     if(themeMeta) themeMeta.setAttribute('content', profile.color);
+
+    // Aplicar foto de perfil
+    const headerPic = document.getElementById('header-profile-pic');
+    const profilePreview = document.getElementById('profile-preview');
+    const profileEmoji = document.getElementById('profile-emoji');
+    if(profile.photo) {
+        if(headerPic) { headerPic.innerHTML = `<img src="${profile.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`; }
+        if(profilePreview) { profilePreview.src = profile.photo; profilePreview.style.display = 'block'; }
+        if(profileEmoji) profileEmoji.style.display = 'none';
+    } else {
+        if(headerPic) headerPic.innerHTML = '🎈';
+        if(profilePreview) profilePreview.style.display = 'none';
+        if(profileEmoji) profileEmoji.style.display = 'block';
+    }
+    // Preencher campos
+    const nameInput = document.getElementById('company-name-input');
+    const colorInput = document.getElementById('app-color-input');
+    const colorVal = document.getElementById('color-val-display');
+    if(nameInput) nameInput.value = profile.name || 'Agenda Plus';
+    if(colorInput) colorInput.value = profile.color || '#6200ea';
+    if(colorVal) colorVal.innerText = profile.color || '#6200ea';
 }
+
+// Salvar Perfil
+const btnSaveProfile = document.getElementById('btn-save-profile');
+if(btnSaveProfile) {
+    btnSaveProfile.onclick = () => {
+        const name = document.getElementById('company-name-input').value || 'Agenda Plus';
+        const color = document.getElementById('app-color-input').value || '#6200ea';
+        const profile = Storage.get('profile') || {};
+        profile.name = name;
+        profile.color = color;
+        Storage.set('profile', profile);
+        applyProfile();
+        btnSaveProfile.innerText = '✅ Salvo!';
+        setTimeout(() => btnSaveProfile.innerText = 'Salvar Alterações', 1500);
+    };
+}
+
+// Upload de foto de perfil - usa crop modal
+const profileUpload = document.getElementById('profile-upload');
+if(profileUpload) {
+    profileUpload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => openProfileCropModal(ev.target.result);
+        reader.readAsDataURL(file);
+        e.target.value = '';
+    });
+}
+
+// Cor do app em tempo real
+const appColorInput = document.getElementById('app-color-input');
+const colorValDisplay = document.getElementById('color-val-display');
+if(appColorInput) {
+    appColorInput.addEventListener('input', () => {
+        if(colorValDisplay) colorValDisplay.innerText = appColorInput.value;
+    });
+}
+
+// Crop modal para foto de perfil (reutiliza o mesmo modal)
+let _cropForProfile = false;
+
+function openProfileCropModal(src) {
+    _cropForProfile = true;
+    openCropModal(src);
+}
+
+// Sobrescreve confirmCrop para lidar com ambos os casos
+const _origConfirmCrop = confirmCrop;
+confirmCrop = function() {
+    const img = document.getElementById('crop-image');
+    const container = document.getElementById('crop-container');
+    const cw = container.offsetWidth;
+    const ch = container.offsetHeight;
+    const size = 260;
+    const cx = cw / 2;
+    const cy = ch / 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const sx = (cx - size / 2 - cropState.offsetX) / cropState.scale;
+    const sy = (cy - size / 2 - cropState.offsetY) / cropState.scale;
+    const sw = size / cropState.scale;
+    const sh = size / cropState.scale;
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
+    const result = canvas.toDataURL('image/jpeg', 0.85);
+
+    if(_cropForProfile) {
+        // Salvar como foto de perfil
+        const profile = Storage.get('profile') || { name: 'Agenda Plus', color: '#6200ea' };
+        profile.photo = result;
+        Storage.set('profile', profile);
+        applyProfile();
+        _cropForProfile = false;
+    } else {
+        // Kit photo original
+        const preview = document.getElementById('kit-photo-preview');
+        if(preview) preview.innerHTML = `<img src="${result}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">`;
+        let hiddenPhoto = document.getElementById('kit-photo-base64');
+        if(!hiddenPhoto) {
+            hiddenPhoto = document.createElement('input');
+            hiddenPhoto.type = 'hidden'; hiddenPhoto.id = 'kit-photo-base64';
+            document.getElementById('add-client-form').appendChild(hiddenPhoto);
+        }
+        hiddenPhoto.value = result;
+    }
+    closeCropModal();
+};
+
+// Filtros de Clientes
+window._filterStatus = '';
+window._filterCategory = '';
+
+function toggleFilterPanel() {
+    const panel = document.getElementById('filter-panel');
+    if(!panel) return;
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+document.addEventListener('click', (e) => {
+    const chip = e.target.closest('.filter-chip');
+    if(!chip) return;
+    const group = chip.dataset.group;
+    const value = chip.dataset.value;
+    // Deselect siblings
+    document.querySelectorAll(`.filter-chip[data-group="${group}"]`).forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    if(group === 'status') window._filterStatus = value;
+    if(group === 'category') window._filterCategory = value;
+    // Update badge
+    const badge = document.getElementById('filter-badge');
+    if(badge) badge.style.display = (window._filterStatus || window._filterCategory) ? 'inline' : 'none';
+    const searchVal = document.getElementById('client-search') ? document.getElementById('client-search').value.toLowerCase() : '';
+    renderClients(searchVal);
+});
 
 // Inicialização
 window.onload = () => {
