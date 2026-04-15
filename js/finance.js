@@ -45,7 +45,8 @@ const Finance = {
 
         clients.forEach(c => {
             const val = parseFloat(c.value) || 0;
-            if (c.status === 'pago') totalPago += val;
+            const extras = (c.adicionais || []).reduce((s,a) => s + (parseFloat(a.valor)||0), 0);
+            if (c.status === 'pago') totalPago += val + extras;
         });
 
         const settings = Storage.get('settings') || { splitPercentage: 50 };

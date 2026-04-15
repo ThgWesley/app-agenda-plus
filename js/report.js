@@ -37,7 +37,7 @@ function renderReport() {
     let totalPago = 0, totalPendente = 0, total50resto = 0;
 
     clients.forEach(c => {
-        const val = parseFloat(c.value) || 0;
+        const val = (parseFloat(c.value) || 0) + (c.adicionais||[]).reduce((s,a)=>s+(parseFloat(a.valor)||0),0);
         if(c.status === 'pago')         totalPago     += val;
         else if(c.status === '50')      total50resto  += val / 2;
         else                            totalPendente += val;
@@ -165,7 +165,7 @@ function buildReportHTML() {
 
     let totalPago = 0, totalPendente = 0, total50resto = 0;
     clients.forEach(c => {
-        const val = parseFloat(c.value) || 0;
+        const val = (parseFloat(c.value) || 0) + (c.adicionais||[]).reduce((s,a)=>s+(parseFloat(a.valor)||0),0);
         if(c.status === 'pago') totalPago += val;
         else if(c.status === '50') total50resto += val / 2;
         else totalPendente += val;

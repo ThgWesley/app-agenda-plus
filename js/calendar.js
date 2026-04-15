@@ -88,7 +88,7 @@ function loadDailyEvents(dateStr) {
                 <p style="font-size:11px; color: var(--primary); font-weight:500; margin:2px 0;">${c.kitName} (${c.category})</p>
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px;">
                     <p class="price-tag" style="font-size:12px; margin:0;">R$ ${(parseFloat(c.value)||0).toFixed(2).replace('.',',')}</p>
-                    <button onclick="openStatusModal(${c.id}, '${(c.clientName||'').replace(/'/g,"\\'")}')}" 
+                    <button onclick="openStatusModal(${c.id}, '${(c.clientName||'').replace(/'/g,"\\'")}')"
                         style="width:22px; height:22px; border-radius:50%; border:2px solid white; box-shadow:0 2px 6px rgba(0,0,0,0.25); background:${statusColors[c.status]||'var(--red)'}; cursor:pointer; padding:0; flex-shrink:0;">
                     </button>
                 </div>

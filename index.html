@@ -286,6 +286,13 @@
                     <p style="font-size:12px; color:var(--text-sub); margin-bottom:15px;">Baixe um arquivo .ics com todos os seus eventos e importe no Google Agenda, Apple Calendar ou qualquer outro app de calendário.</p>
                     <button id="btn-export-ics" class="btn-primary ripple" style="background:var(--bg); color:var(--primary); border:2px solid var(--primary); box-shadow:none;">📥 Baixar arquivo .ics</button>
                 </div>
+
+                <!-- Forçar Atualização -->
+                <div class="glass-card form-container" style="margin-top:15px; margin-bottom:20px;">
+                    <h3 style="font-size:15px; font-weight:600; margin-bottom:6px;">🔄 Atualizar App</h3>
+                    <p style="font-size:12px; color:var(--text-sub); margin-bottom:15px;">Use este botão após uma nova versão ser publicada para forçar a atualização do app no iPhone.</p>
+                    <button id="btn-force-update" class="btn-primary ripple" style="background:var(--bg); color:var(--primary); border:2px solid var(--primary); box-shadow:none;">🔄 Verificar e atualizar agora</button>
+                </div>
             </section>
         </main>
 
@@ -370,13 +377,13 @@
 
                         <div class="form-group">
                             <label id="kit-name-label">Nome do Kit / Tema</label>
-                            <input type="text" id="kit-name" required placeholder="Ex: Jardim Encantado">
+                            <input type="text" id="kit-name" placeholder="Ex: Jardim Encantado">
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Valor Total (R$)</label>
-                                <input type="number" step="0.01" id="kit-value" required placeholder="0,00">
+                                <input type="number" step="0.01" id="kit-value" placeholder="0,00 (ou deixe em branco para usar total dos adicionais)">
                             </div>
                             
                             <div class="form-group">
@@ -400,6 +407,29 @@
                                 
                                 <input type="radio" name="payment-status" value="pago" id="status-pago">
                                 <label for="status-pago" class="status-label pago">Pago Total</label>
+                            </div>
+                        </div>
+
+                        <!-- ADICIONAIS -->
+                        <div style="margin: 15px 0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <label style="margin:0; font-weight:500;">Adicionais</label>
+                                <button type="button" onclick="toggleAdicionaisPanel()" style="background:var(--primary-light); color:var(--primary); border:none; border-radius:20px; padding:5px 14px; font-size:12px; font-weight:600; cursor:pointer;">+ Gerenciar</button>
+                            </div>
+                            <div id="adicionais-panel" style="display:none; background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:14px;">
+                                <div id="adicionais-items"></div>
+                                <p id="adicionais-total-label" style="font-size:12px; font-weight:600; color:var(--primary); margin:6px 0 0; text-align:right;"></p>
+                                <div id="adicional-inline-form" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+                                    <div style="display:flex; flex-direction:column; gap:8px;">
+                                        <input type="text" id="adicional-nome" placeholder="Ex: Boleira, Bandeja, Mesa..." style="padding:10px 12px; border:1px solid var(--border); border-radius:10px; font-size:14px;">
+                                        <input type="number" id="adicional-valor" placeholder="Valor (R$)" step="0.01" min="0" style="padding:10px 12px; border:1px solid var(--border); border-radius:10px; font-size:14px;">
+                                        <div style="display:flex; gap:8px;">
+                                            <button type="button" onclick="saveAdicional()" style="flex:1; padding:10px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:600; cursor:pointer;">✔ Salvar</button>
+                                            <button type="button" onclick="document.getElementById('adicional-inline-form').style.display='none'" style="padding:10px 14px; background:none; border:1px solid var(--border); border-radius:10px; cursor:pointer; color:var(--text-sub);">✕</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="showAddAdicionalForm()" style="width:100%; margin-top:10px; padding:9px; background:none; border:2px dashed var(--border); border-radius:10px; color:var(--text-sub); font-size:13px; cursor:pointer;">+ Adicionar item</button>
                             </div>
                         </div>
 

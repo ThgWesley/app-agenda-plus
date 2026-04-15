@@ -84,18 +84,10 @@ function toggleBalloonColors() {
 }
 
 function updateKitNameRequired() {
-    const checkbox = document.getElementById('has-balloons');
-    const mainCat = document.getElementById('main-category');
     const kitNameInput = document.getElementById('kit-name');
     const kitNameLabel = document.getElementById('kit-name-label');
-    const apenasArco = checkbox && checkbox.checked && (!mainCat || mainCat.value === '');
-    if(apenasArco) {
-        if(kitNameInput) kitNameInput.removeAttribute('required');
-        if(kitNameLabel) kitNameLabel.innerText = 'Nome do Kit / Tema (Opcional)';
-    } else {
-        if(kitNameInput) kitNameInput.setAttribute('required', 'required');
-        if(kitNameLabel) kitNameLabel.innerText = 'Nome do Kit / Tema';
-    }
+    if(kitNameInput) kitNameInput.removeAttribute('required');
+    if(kitNameLabel) kitNameLabel.innerText = 'Nome do Kit / Tema (Opcional)';
 }
 
 // --- SISTEMA DE CROP DE IMAGEM ---
@@ -264,6 +256,12 @@ function setClientStatus(newStatus) {
         Storage.set('clients', clients);
         renderClients();
         if(typeof Finance !== 'undefined') Finance.updateDashboard();
+        // Atualiza eventos do dia se estiver na aba agenda
+        const activeDay = document.querySelector('.cal-day.active');
+        if(activeDay && typeof loadDailyEvents === 'function') {
+            const dateInput = document.getElementById('event-date');
+            if(dateInput && dateInput.value) loadDailyEvents(dateInput.value);
+        }
     }
     document.getElementById('modal-status').style.display = 'none';
     document.body.style.overflow = '';
@@ -365,6 +363,10 @@ function openEditModal() {
     }
     editingId.value = client.id;
 
+    // Carregar adicionais do cliente
+    _adicionaisList = client.adicionais ? [...client.adicionais] : [];
+    renderAdicionaisList();
+
     openModal();
 }
 
@@ -465,6 +467,62 @@ if(searchInput) {
 }
 
 // Salvar / Atualizar Cliente
+// --- ADICIONAIS ---
+let _adicionaisList = [];
+
+function toggleAdicionaisPanel() {
+    const panel = document.getElementById('adicionais-panel');
+    if(!panel) return;
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    renderAdicionaisList();
+}
+
+function renderAdicionaisList() {
+    const ul = document.getElementById('adicionais-items');
+    if(!ul) return;
+    if(_adicionaisList.length === 0) {
+        ul.innerHTML = '<p style="font-size:12px;color:var(--text-sub);text-align:center;margin:8px 0;">Nenhum adicional ainda.</p>';
+    } else {
+        ul.innerHTML = _adicionaisList.map((a, i) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;">
+                <span>📦 ${a.nome}</span>
+                <span style="font-weight:600;color:var(--primary);">R$ ${parseFloat(a.valor).toFixed(2).replace('.',',')}</span>
+                <button onclick="_adicionaisList.splice(${i},1); renderAdicionaisList(); updateAdicionaisTotal();" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:0 4px;">×</button>
+            </div>
+        `).join('');
+    }
+    updateAdicionaisTotal();
+}
+
+function updateAdicionaisTotal() {
+    const total = _adicionaisList.reduce((s, a) => s + parseFloat(a.valor||0), 0);
+    const el = document.getElementById('adicionais-total-label');
+    if(el) el.innerText = total > 0 ? `Total adicionais: R$ ${total.toFixed(2).replace('.',',')}` : '';
+    // Auto-preenche o Valor Total se estiver vazio ou zerado
+    const kitVal = document.getElementById('kit-value');
+    if(kitVal && (!kitVal.value || parseFloat(kitVal.value) === 0)) {
+        if(total > 0) kitVal.value = total.toFixed(2);
+        else kitVal.value = '';
+    }
+}
+
+function showAddAdicionalForm() {
+    const f = document.getElementById('adicional-inline-form');
+    if(f) { f.style.display = 'block'; document.getElementById('adicional-nome').focus(); }
+}
+
+function saveAdicional() {
+    const nome = (document.getElementById('adicional-nome').value || '').trim();
+    const valor = parseFloat(document.getElementById('adicional-valor').value) || 0;
+    if(!nome) { alert('Informe o nome do adicional.'); return; }
+    if(valor <= 0) { alert('Informe um valor válido.'); return; }
+    _adicionaisList.push({ nome, valor });
+    document.getElementById('adicional-nome').value = '';
+    document.getElementById('adicional-valor').value = '';
+    document.getElementById('adicional-inline-form').style.display = 'none';
+    renderAdicionaisList();
+}
+
 const form = document.getElementById('add-client-form');
 if(form) {
     form.addEventListener('submit', (e) => {
@@ -499,10 +557,11 @@ if(form) {
                     date: document.getElementById('event-date').value,
                     category: categoryVal,
                     kitName: document.getElementById('kit-name').value,
-                    value: parseFloat(document.getElementById('kit-value').value) || 0,
+                    value: parseFloat(document.getElementById('kit-value').value) || _adicionaisList.reduce((s,a)=>s+(parseFloat(a.valor)||0),0),
                     status: statusVal,
                     method: document.getElementById('payment-method').value,
-                    photo: base64 !== null ? base64 : clients[idx].photo
+                    photo: base64 !== null ? base64 : clients[idx].photo,
+                    adicionais: [..._adicionaisList]
                 };
             }
         } else {
@@ -514,9 +573,10 @@ if(form) {
                 date: document.getElementById('event-date').value,
                 category: categoryVal,
                 kitName: document.getElementById('kit-name').value,
-                value: parseFloat(document.getElementById('kit-value').value) || 0,
+                value: parseFloat(document.getElementById('kit-value').value) || _adicionaisList.reduce((s,a)=>s+(parseFloat(a.valor)||0),0),
                 status: statusVal,
-                method: document.getElementById('payment-method').value
+                method: document.getElementById('payment-method').value,
+                adicionais: [..._adicionaisList]
             });
         }
 
@@ -530,9 +590,10 @@ if(form) {
         if(document.getElementById('btn-clear-category')) document.getElementById('btn-clear-category').style.display = 'none';
         if(document.getElementById('category-arrow')) document.getElementById('category-arrow').style.display = 'inline-block';
         if(document.getElementById('main-category')) document.getElementById('main-category').value = '';
-        if(document.getElementById('kit-name-label')) document.getElementById('kit-name-label').innerText = 'Nome do Kit / Tema';
-        if(document.getElementById('kit-name')) document.getElementById('kit-name').setAttribute('required', 'required');
+        if(document.getElementById('kit-name-label')) document.getElementById('kit-name-label').innerText = 'Nome do Kit / Tema (Opcional)';
+        if(document.getElementById('kit-name')) document.getElementById('kit-name').removeAttribute('required');
         if(document.getElementById('kit-photo-base64')) document.getElementById('kit-photo-base64').value = '';
+        _adicionaisList = []; renderAdicionaisList ? renderAdicionaisList() : null;
         const preview = document.getElementById('kit-photo-preview');
         if(preview) preview.innerHTML = '🎈';
 
@@ -608,6 +669,7 @@ function renderClients(filterTerm = "", filterStatus = null, filterCategory = nu
                     </button>
                 </div>
                 <p class="info-line" style="margin-top:3px; font-size:11px;">💳 ${c.method || 'N/A'}</p>
+                ${c.adicionais && c.adicionais.length > 0 ? `<p class="info-line" style="margin-top:3px; font-size:11px; color:var(--primary);">📦 Adicionais: ${c.adicionais.map(a=>a.nome).join(', ')} (+R$ ${c.adicionais.reduce((s,a)=>s+(parseFloat(a.valor)||0),0).toFixed(2).replace('.',',')})</p>` : ''}
             </div>
         </div>
     `).join('');
@@ -760,6 +822,31 @@ document.addEventListener('click', (e) => {
     const searchVal = document.getElementById('client-search') ? document.getElementById('client-search').value.toLowerCase() : '';
     renderClients(searchVal);
 });
+
+// Botão de forçar atualização
+const btnForceUpdate = document.getElementById('btn-force-update');
+if(btnForceUpdate) {
+    btnForceUpdate.onclick = async () => {
+        btnForceUpdate.innerText = '⏳ Verificando...';
+        btnForceUpdate.disabled = true;
+        try {
+            if('serviceWorker' in navigator) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                for(const reg of regs) await reg.unregister();
+            }
+            // Clear caches
+            if('caches' in window) {
+                const keys = await caches.keys();
+                await Promise.all(keys.map(k => caches.delete(k)));
+            }
+            btnForceUpdate.innerText = '✅ Atualizado! Recarregando...';
+            setTimeout(() => location.reload(true), 800);
+        } catch(e) {
+            btnForceUpdate.innerText = '⚠️ Erro, tente recarregar manualmente';
+            btnForceUpdate.disabled = false;
+        }
+    };
+}
 
 // Inicialização
 window.onload = () => {
