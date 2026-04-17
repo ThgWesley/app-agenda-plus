@@ -90,141 +90,56 @@ function updateKitNameRequired() {
     if(kitNameLabel) kitNameLabel.innerText = 'Nome do Kit / Tema (Opcional)';
 }
 
-// --- SISTEMA DE CROP DE IMAGEM ---
-let cropState = {
-    scale: 1, offsetX: 0, offsetY: 0,
-    startX: 0, startY: 0, dragging: false,
-    lastDist: 0, originalSrc: ''
-};
+// --- SISTEMA DE CROP DE IMAGEM (Croppie) ---
+let _croppieInstance = null;
+let _cropForProfile = false;
 
 function openCropModal(src) {
     const modal = document.getElementById('modal-crop');
-    const img = document.getElementById('crop-image');
-    const zoomSlider = document.getElementById('crop-zoom');
-    cropState.scale = 1; cropState.offsetX = 0; cropState.offsetY = 0;
-    cropState.originalSrc = src;
-    img.src = src;
-    img.onload = () => {
-        const container = document.getElementById('crop-container');
-        const cw = container.offsetWidth;
-        const ch = container.offsetHeight;
-        // Scale so image FULLY covers the container (cover, not contain)
-        const scaleToFill = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
-        cropState.scale = scaleToFill;
-        cropState.offsetX = (cw - img.naturalWidth * scaleToFill) / 2;
-        cropState.offsetY = (ch - img.naturalHeight * scaleToFill) / 2;
-        // Min zoom = scaleToFill (image always fills container), max = 4x
-        zoomSlider.min = scaleToFill;
-        zoomSlider.max = scaleToFill * 4;
-        zoomSlider.value = scaleToFill;
-        applyCropTransform();
-    };
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
-    setupCropEvents();
-}
 
-function applyCropTransform() {
-    const img = document.getElementById('crop-image');
-    img.style.left = cropState.offsetX + 'px';
-    img.style.top = cropState.offsetY + 'px';
-    img.style.width = (img.naturalWidth * cropState.scale) + 'px';
-    img.style.height = (img.naturalHeight * cropState.scale) + 'px';
-    img.style.transform = '';
-}
+    // Destruir instância anterior se existir
+    if(_croppieInstance) {
+        try { _croppieInstance.destroy(); } catch(e) {}
+        _croppieInstance = null;
+    }
 
-function setupCropEvents() {
-    const container = document.getElementById('crop-container');
-    const img = document.getElementById('crop-image');
-    const zoomSlider = document.getElementById('crop-zoom');
-    const newContainer = container.cloneNode(false);
-    while(container.firstChild) newContainer.appendChild(container.firstChild);
-    container.parentNode.replaceChild(newContainer, container);
-    newContainer.appendChild(img);
+    const container = document.getElementById('crop-croppie-container');
+    container.innerHTML = '';
 
-    newContainer.addEventListener('touchstart', (e) => {
-        if(e.touches.length === 1) {
-            cropState.dragging = true;
-            cropState.startX = e.touches[0].clientX - cropState.offsetX;
-            cropState.startY = e.touches[0].clientY - cropState.offsetY;
-        } else if(e.touches.length === 2) {
-            cropState.lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-        }
-        e.preventDefault();
-    }, { passive: false });
-
-    newContainer.addEventListener('touchmove', (e) => {
-        if(e.touches.length === 1 && cropState.dragging) {
-            cropState.offsetX = e.touches[0].clientX - cropState.startX;
-            cropState.offsetY = e.touches[0].clientY - cropState.startY;
-            applyCropTransform();
-        } else if(e.touches.length === 2) {
-            const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-            const delta = dist - cropState.lastDist;
-            cropState.scale = Math.max(parseFloat(zoomSlider.min), Math.min(parseFloat(zoomSlider.max), cropState.scale + delta * 0.005));
-            cropState.lastDist = dist;
-            zoomSlider.value = cropState.scale;
-            applyCropTransform();
-        }
-        e.preventDefault();
-    }, { passive: false });
-
-    newContainer.addEventListener('touchend', () => { cropState.dragging = false; });
-
-    newContainer.addEventListener('mousedown', (e) => {
-        cropState.dragging = true;
-        cropState.startX = e.clientX - cropState.offsetX;
-        cropState.startY = e.clientY - cropState.offsetY;
-        img.style.cursor = 'grabbing';
+    _croppieInstance = new Croppie(container, {
+        viewport: { width: 240, height: 240, type: 'square' },
+        boundary: { width: '100%', height: 300 },
+        showZoomer: true,
+        enableResize: false
     });
-    window.addEventListener('mousemove', (e) => {
-        if(!cropState.dragging) return;
-        cropState.offsetX = e.clientX - cropState.startX;
-        cropState.offsetY = e.clientY - cropState.startY;
-        applyCropTransform();
-    });
-    window.addEventListener('mouseup', () => { cropState.dragging = false; img.style.cursor = 'grab'; });
 
-    zoomSlider.oninput = () => {
-        const container2 = document.getElementById('crop-container');
-        const cx = container2.offsetWidth / 2;
-        const cy = container2.offsetHeight / 2;
-        const oldScale = cropState.scale;
-        const newScale = parseFloat(zoomSlider.value);
-        cropState.offsetX = cx - (cx - cropState.offsetX) * (newScale / oldScale);
-        cropState.offsetY = cy - (cy - cropState.offsetY) * (newScale / oldScale);
-        cropState.scale = newScale;
-        applyCropTransform();
-    };
+    _croppieInstance.bind({ url: src });
 }
 
 function confirmCrop() {
-    const img = document.getElementById('crop-image');
-    const container = document.getElementById('crop-container');
-    const cw = container.offsetWidth;
-    const ch = container.offsetHeight;
-    const size = 260;
-    const cx = cw / 2;
-    const cy = ch / 2;
-    const canvas = document.createElement('canvas');
-    canvas.width = size; canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    const sx = (cx - size / 2 - cropState.offsetX) / cropState.scale;
-    const sy = (cy - size / 2 - cropState.offsetY) / cropState.scale;
-    const sw = size / cropState.scale;
-    const sh = size / cropState.scale;
-    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
-    const result = canvas.toDataURL('image/jpeg', 0.85);
-    const preview = document.getElementById('kit-photo-preview');
-    if(preview) preview.innerHTML = `<img src="${result}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">`;
-    let hiddenPhoto = document.getElementById('kit-photo-base64');
-    if(!hiddenPhoto) {
-        hiddenPhoto = document.createElement('input');
-        hiddenPhoto.type = 'hidden'; hiddenPhoto.id = 'kit-photo-base64';
-        document.getElementById('add-client-form').appendChild(hiddenPhoto);
-    }
-    hiddenPhoto.value = result;
-    closeCropModal();
+    if(!_croppieInstance) return;
+    _croppieInstance.result({ type: 'base64', size: { width: 300, height: 300 }, format: 'jpeg', quality: 0.85 }).then(result => {
+        if(_cropForProfile) {
+            const profile = Storage.get('profile') || { name: 'Agenda Plus', color: '#6200ea' };
+            profile.photo = result;
+            Storage.set('profile', profile);
+            applyProfile();
+            _cropForProfile = false;
+        } else {
+            const preview = document.getElementById('kit-photo-preview');
+            if(preview) preview.innerHTML = `<img src="${result}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">`;
+            let hiddenPhoto = document.getElementById('kit-photo-base64');
+            if(!hiddenPhoto) {
+                hiddenPhoto = document.createElement('input');
+                hiddenPhoto.type = 'hidden'; hiddenPhoto.id = 'kit-photo-base64';
+                document.getElementById('add-client-form').appendChild(hiddenPhoto);
+            }
+            hiddenPhoto.value = result;
+        }
+        closeCropModal();
+    });
 }
 
 function cancelCrop() { closeCropModal(); }
@@ -233,6 +148,15 @@ function closeCropModal() {
     const modal = document.getElementById('modal-crop');
     if(modal) modal.style.display = 'none';
     document.body.style.overflow = '';
+    if(_croppieInstance) {
+        try { _croppieInstance.destroy(); } catch(e) {}
+        _croppieInstance = null;
+    }
+}
+
+function openProfileCropModal(src) {
+    _cropForProfile = true;
+    openCropModal(src);
 }
 
 // --- SISTEMA DE STATUS NO CARD ---
@@ -747,55 +671,6 @@ if(appColorInput) {
 }
 
 // Crop modal para foto de perfil (reutiliza o mesmo modal)
-let _cropForProfile = false;
-
-function openProfileCropModal(src) {
-    _cropForProfile = true;
-    openCropModal(src);
-}
-
-// Sobrescreve confirmCrop para lidar com ambos os casos
-const _origConfirmCrop = confirmCrop;
-confirmCrop = function() {
-    const img = document.getElementById('crop-image');
-    const container = document.getElementById('crop-container');
-    const cw = container.offsetWidth;
-    const ch = container.offsetHeight;
-    const size = 260;
-    const cx = cw / 2;
-    const cy = ch / 2;
-    const canvas = document.createElement('canvas');
-    canvas.width = size; canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    const sx = (cx - size / 2 - cropState.offsetX) / cropState.scale;
-    const sy = (cy - size / 2 - cropState.offsetY) / cropState.scale;
-    const sw = size / cropState.scale;
-    const sh = size / cropState.scale;
-    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
-    const result = canvas.toDataURL('image/jpeg', 0.85);
-
-    if(_cropForProfile) {
-        // Salvar como foto de perfil
-        const profile = Storage.get('profile') || { name: 'Agenda Plus', color: '#6200ea' };
-        profile.photo = result;
-        Storage.set('profile', profile);
-        applyProfile();
-        _cropForProfile = false;
-    } else {
-        // Kit photo original
-        const preview = document.getElementById('kit-photo-preview');
-        if(preview) preview.innerHTML = `<img src="${result}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">`;
-        let hiddenPhoto = document.getElementById('kit-photo-base64');
-        if(!hiddenPhoto) {
-            hiddenPhoto = document.createElement('input');
-            hiddenPhoto.type = 'hidden'; hiddenPhoto.id = 'kit-photo-base64';
-            document.getElementById('add-client-form').appendChild(hiddenPhoto);
-        }
-        hiddenPhoto.value = result;
-    }
-    closeCropModal();
-};
-
 // Filtros de Clientes
 window._filterStatus = '';
 window._filterCategory = '';

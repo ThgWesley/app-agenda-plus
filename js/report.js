@@ -29,7 +29,14 @@ let chartInstance = null;
 
 // --- RENDERIZAR RELATÓRIO ---
 function renderReport() {
-    const clients  = Storage.get('clients') || [];
+    const now = new Date();
+    const curY = now.getFullYear();
+    const curM = String(now.getMonth() + 1).padStart(2, '0');
+    const allClients = Storage.get('clients') || [];
+    const clients = allClients.filter(c => c.date && c.date.startsWith(`${curY}-${curM}`));
+    const monthNames = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+    const labelEl = document.getElementById('report-month-label');
+    if(labelEl) labelEl.innerText = `${monthNames[now.getMonth()]} ${curY}`;
     const settings = Storage.get('settings') || { splitPercentage: 50 };
     const mePercent    = parseFloat(settings.splitPercentage) || 50;
     const storePercent = 100 - mePercent;
@@ -155,7 +162,11 @@ function renderReport() {
 
 // --- GERAR HTML DO RELATÓRIO PARA EXPORTAÇÃO ---
 function buildReportHTML() {
-    const clients  = Storage.get('clients') || [];
+    const now = new Date();
+    const curY = now.getFullYear();
+    const curM = String(now.getMonth() + 1).padStart(2, '0');
+    const allClients = Storage.get('clients') || [];
+    const clients = allClients.filter(c => c.date && c.date.startsWith(`${curY}-${curM}`));
     const profile  = Storage.get('profile') || { name: 'Agenda Plus', color: '#6200ea' };
     const settings = Storage.get('settings') || { splitPercentage: 50 };
     const color      = profile.color || '#6200ea';
