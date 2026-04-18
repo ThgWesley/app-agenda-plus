@@ -63,6 +63,11 @@ function renderReport() {
     set('rep-a-receber',     fmt(totalAReceber));
     set('rep-total-geral',   fmt(totalGeral));
     set('rep-total-clientes', clients.length);
+
+    // Saídas
+    const now2 = new Date();
+    const saidasKey = `saidas_${now2.getFullYear()}_${String(now2.getMonth()+1).padStart(2,'0')}`;
+    renderSaidasList(saidasKey, caixaLoja);
     set('rep-me-pct',        mePercent);
     set('rep-store-pct',     storePercent);
     set('rep-my-cut',        fmt(meuLucro));
@@ -322,3 +327,96 @@ window.addEventListener('load', () => {
     if(btnDownload) btnDownload.addEventListener('click', downloadReportPNG);
     if(btnShare)    btnShare.addEventListener('click', shareReport);
 });
+
+// --- SAÍDAS ---
+function getSaidasKey() {
+    const n = new Date();
+    return `saidas_${n.getFullYear()}_${String(n.getMonth()+1).padStart(2,'0')}`;
+}
+
+function renderSaidasList(key, caixaLoja) {
+    if(!key) key = getSaidasKey();
+    const saidas = Storage.get(key) || [];
+    const list = document.getElementById('saidas-list');
+    const totalEl = document.getElementById('rep-total-saidas');
+    const lojaLiqEl = document.getElementById('rep-loja-liquido');
+    if(!list) return;
+
+    const total = saidas.reduce((s, i) => s + (parseFloat(i.valor)||0), 0);
+
+    if(saidas.length === 0) {
+        list.innerHTML = '<p style="font-size:12px;color:var(--text-sub);text-align:center;margin:8px 0;">Nenhuma saída registrada.</p>';
+    } else {
+        list.innerHTML = saidas.map((s, i) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;">
+                <span>📤 ${s.descricao}</span>
+                <span style="font-weight:600;color:var(--red);">-R$ ${parseFloat(s.valor).toFixed(2).replace('.',',')}</span>
+                <button onclick="deleteSaida(${i})" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:0 4px;">×</button>
+            </div>
+        `).join('');
+    }
+
+    const fmt = v => `R$ ${v.toFixed(2).replace('.', ',')}`;
+    if(totalEl) totalEl.innerText = fmt(total);
+    // Loja líquido = parte da loja - saídas
+    const lojaLiq = (caixaLoja || 0) - total;
+    if(lojaLiqEl) {
+        lojaLiqEl.innerText = fmt(Math.max(0, lojaLiq));
+        lojaLiqEl.style.color = lojaLiq < 0 ? 'var(--red)' : 'var(--green)';
+    }
+}
+
+function showAddSaidaForm() {
+    const f = document.getElementById('saida-inline-form');
+    if(f) { f.style.display = 'block'; document.getElementById('saida-descricao').focus(); }
+}
+
+function saveSaida() {
+    const desc = (document.getElementById('saida-descricao').value || '').trim();
+    const valor = parseFloat(document.getElementById('saida-valor').value) || 0;
+    if(!desc) { alert('Informe a descrição da saída.'); return; }
+    if(valor <= 0) { alert('Informe um valor válido.'); return; }
+    const key = getSaidasKey();
+    const saidas = Storage.get(key) || [];
+    saidas.push({ descricao: desc, valor });
+    Storage.set(key, saidas);
+    document.getElementById('saida-descricao').value = '';
+    document.getElementById('saida-valor').value = '';
+    document.getElementById('saida-inline-form').style.display = 'none';
+    // Recalcular loja para passar ao render
+    const settings = Storage.get('settings') || { splitPercentage: 50 };
+    const storePercent = 100 - (parseFloat(settings.splitPercentage) || 50);
+    const clients = Storage.get('clients') || [];
+    const now = new Date();
+    const curY = now.getFullYear();
+    const curM = String(now.getMonth()+1).padStart(2,'0');
+    const filtered = clients.filter(c => c.date && c.date.startsWith(`${curY}-${curM}`));
+    let totalPago = 0;
+    filtered.forEach(c => {
+        const v = (parseFloat(c.value)||0) + (c.adicionais||[]).reduce((s,a)=>s+(parseFloat(a.valor)||0),0);
+        if(c.status === 'pago') totalPago += v;
+    });
+    const caixaLoja = totalPago * (storePercent / 100);
+    renderSaidasList(key, caixaLoja);
+}
+
+function deleteSaida(idx) {
+    const key = getSaidasKey();
+    const saidas = Storage.get(key) || [];
+    saidas.splice(idx, 1);
+    Storage.set(key, saidas);
+    const settings = Storage.get('settings') || { splitPercentage: 50 };
+    const storePercent = 100 - (parseFloat(settings.splitPercentage) || 50);
+    const clients = Storage.get('clients') || [];
+    const now = new Date();
+    const curY = now.getFullYear();
+    const curM = String(now.getMonth()+1).padStart(2,'0');
+    const filtered = clients.filter(c => c.date && c.date.startsWith(`${curY}-${curM}`));
+    let totalPago = 0;
+    filtered.forEach(c => {
+        const v = (parseFloat(c.value)||0) + (c.adicionais||[]).reduce((s,a)=>s+(parseFloat(a.valor)||0),0);
+        if(c.status === 'pago') totalPago += v;
+    });
+    const caixaLoja = totalPago * (storePercent / 100);
+    renderSaidasList(key, caixaLoja);
+}

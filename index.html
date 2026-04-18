@@ -189,11 +189,40 @@
                         </div>
                     </div>
 
+                    <!-- Saídas -->
+                    <div class="glass-card report-chart-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <h3 class="report-section-title" style="margin:0;">📤 Saídas da Empresa</h3>
+                            <button onclick="showAddSaidaForm()" style="background:var(--primary-light); color:var(--primary); border:none; border-radius:20px; padding:5px 14px; font-size:12px; font-weight:600; cursor:pointer;">+ Adicionar</button>
+                        </div>
+                        <div id="saidas-list"></div>
+                        <div id="saida-inline-form" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                <input type="text" id="saida-descricao" placeholder="Ex: Fita, Gás, Transporte..." style="padding:10px 12px; border:1px solid var(--border); border-radius:10px; font-size:14px;">
+                                <input type="number" id="saida-valor" placeholder="Valor (R$)" step="0.01" min="0" style="padding:10px 12px; border:1px solid var(--border); border-radius:10px; font-size:14px;">
+                                <div style="display:flex; gap:8px;">
+                                    <button type="button" onclick="saveSaida()" style="flex:1; padding:10px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:600; cursor:pointer;">✔ Salvar</button>
+                                    <button type="button" onclick="document.getElementById('saida-inline-form').style.display='none'" style="padding:10px 14px; background:none; border:1px solid var(--border); border-radius:10px; cursor:pointer; color:var(--text-sub);">✕</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:13px; font-weight:600; color:var(--text-sub);">Total saídas:</span>
+                            <span id="rep-total-saidas" style="font-size:15px; font-weight:700; color:var(--red);">R$ 0,00</span>
+                        </div>
+                        <div style="margin-top:6px; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:13px; font-weight:600; color:var(--text-sub);">Loja (líquido):</span>
+                            <span id="rep-loja-liquido" style="font-size:15px; font-weight:700; color:var(--green);">R$ 0,00</span>
+                        </div>
+                    </div>
+
                     <!-- Lista de clientes por status -->
                     <div class="glass-card report-chart-card">
                         <h3 class="report-section-title">📋 Todos os Agendamentos</h3>
                         <div id="report-clients-list"></div>
                     </div>
+
+
                 </div>
 
             </section>

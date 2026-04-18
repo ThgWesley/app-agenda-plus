@@ -300,6 +300,27 @@ function resetFormToNew() {
     if(submitBtn) submitBtn.innerText = 'Salvar no Calendário';
     const editingId = document.getElementById('editing-client-id');
     if(editingId) editingId.value = '';
+
+    // Limpar todos os campos do formulário
+    const form = document.getElementById('add-client-form');
+    if(form) form.reset();
+
+    if(document.getElementById('selected-category-text')) document.getElementById('selected-category-text').innerText = 'Selecionar kit...';
+    if(document.getElementById('selected-payment-text')) document.getElementById('selected-payment-text').innerText = 'Selecionar pagamento...';
+    if(document.getElementById('balloon-input-group')) document.getElementById('balloon-input-group').style.display = 'none';
+    if(document.getElementById('btn-clear-category')) document.getElementById('btn-clear-category').style.display = 'none';
+    if(document.getElementById('category-arrow')) document.getElementById('category-arrow').style.display = 'inline-block';
+    if(document.getElementById('main-category')) document.getElementById('main-category').value = '';
+    if(document.getElementById('kit-name-label')) document.getElementById('kit-name-label').innerText = 'Nome do Kit / Tema (Opcional)';
+    if(document.getElementById('kit-photo-base64')) document.getElementById('kit-photo-base64').value = '';
+    const preview = document.getElementById('kit-photo-preview');
+    if(preview) preview.innerHTML = '<span class="photo-add-hint">📷<br><span style="font-size:11px;color:var(--text-sub);">Toque para adicionar</span></span>';
+    _adicionaisList = [];
+    if(typeof renderAdicionaisList === 'function') renderAdicionaisList();
+    const adicionaisPanel = document.getElementById('adicionais-panel');
+    if(adicionaisPanel) adicionaisPanel.style.display = 'none';
+    const inlineForm = document.getElementById('adicional-inline-form');
+    if(inlineForm) inlineForm.style.display = 'none';
 }
 
 // --- CONTROLE DE INTERFACE ---
