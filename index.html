@@ -259,7 +259,6 @@
                     <button id="btn-save-profile" class="btn-primary ripple">Salvar Alterações</button>
                 </div>
 
-                <!-- Google Calendar -->
                 <div class="glass-card form-container" style="margin-top:15px;">
                     <h3 style="font-size:15px; font-weight:600; margin-bottom:15px;">📅 Sincronizar Google Calendar</h3>
                     <p style="font-size:12px; color:var(--text-sub); margin-bottom:15px;">Enviar todos os agendamentos para Google Calendar</p>
@@ -267,6 +266,18 @@
                 </div>
 
                 <!-- Notificações -->
+                <!-- Google Calendar -->
+                <div class="glass-card form-container" style="margin-top:15px;">
+                    <h3 style="font-size:15px; font-weight:600; margin-bottom:15px;">📅 Google Calendar</h3>
+                    <div id="google-status" style="padding:12px; background:rgba(98,0,234,0.06); border-radius:10px; margin-bottom:15px;">
+                        <p id="google-status-text" style="font-size:13px; font-weight:500; color:var(--primary); margin:0;">⚪ Desconectado</p>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <button id="btn-google-login" class="btn-primary ripple" onclick="GoogleSync.startAuth()">🔗 Conectar Google</button>
+                        <button id="btn-google-sync" class="btn-primary ripple" style="background:var(--bg); color:var(--primary); border:2px solid var(--primary); box-shadow:none; display:none;" onclick="GoogleSync.syncAllEvents()">📤 Sincronizar Eventos</button>
+                        <button id="btn-google-logout" class="btn-primary ripple" style="background:rgba(255,71,87,0.08); color:var(--red); border:2px solid rgba(255,71,87,0.2); display:none;" onclick="GoogleSync.disconnect(); updateGoogleUI();">❌ Desconectar</button>
+                    </div>
+                </div>
                 <div class="glass-card form-container" style="margin-top:15px;">
                     <h3 style="font-size:15px; font-weight:600; margin-bottom:15px;">🔔 Notificações</h3>
                     
