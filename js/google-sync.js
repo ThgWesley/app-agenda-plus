@@ -84,8 +84,11 @@ const GoogleSync = {
     createEvent: function(client) {
         const token = localStorage.getItem('google_access_token');
         
-        // Usar apenas a data, sem conversão de hora
-        const [year, month, day] = client.date.split('-');
+        // Data no formato YYYYMMDD para all-day event
+        const dateStr = client.date.replace(/-/g, '');
+        const nextDate = new Date(client.date);
+        nextDate.setDate(nextDate.getDate() + 1);
+        const nextDateStr = nextDate.toISOString().split('T')[0].replace(/-/g, '');
         
         const event = {
             summary: `${client.clientName} - ${client.kitName}`,
@@ -94,7 +97,7 @@ const GoogleSync = {
                 date: client.date
             },
             end: {
-                date: client.date
+                date: nextDate.toISOString().split('T')[0]
             }
         };
         
