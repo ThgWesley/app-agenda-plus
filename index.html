@@ -311,6 +311,22 @@
                     </div>
                 </div>
 
+                <!-- Sincronização Google Agenda -->
+                <div class="glass-card form-container" style="margin-top:15px; margin-bottom:20px;">
+                    <h3 style="font-size:15px; font-weight:600; margin-bottom:6px;">☁️ Sincronizar com Google Agenda</h3>
+                    <p style="font-size:12px; color:var(--text-sub); margin-bottom:15px;">Seus eventos serão salvos automaticamente no Google Agenda com todas as informações (cliente, serviço, valor, status).</p>
+                    
+                    <div id="google-sync-status" style="padding:12px; background:rgba(98,0,234,0.06); border-radius:10px; margin-bottom:15px; display:none;">
+                        <p id="google-sync-message" style="font-size:13px; font-weight:500; color:var(--primary); margin:0;">Status: Desconectado</p>
+                    </div>
+                    
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <button id="btn-google-connect" class="btn-primary ripple" onclick="GoogleSync.startAuth()">🔗 Conectar Google Agenda</button>
+                        <button id="btn-google-sync-all" class="btn-primary ripple" style="background:var(--bg); color:var(--primary); border:2px solid var(--primary); box-shadow:none; display:none;" onclick="GoogleSync.syncAllEvents()">📤 Sincronizar todos os eventos</button>
+                        <button id="btn-google-disconnect" class="btn-primary ripple" style="background:rgba(255,71,87,0.08); color:var(--red); border:2px solid rgba(255,71,87,0.2); display:none;" onclick="GoogleSync.disconnect(); updateGoogleSyncUI();">❌ Desconectar</button>
+                    </div>
+                </div>
+
                 <!-- Exportar para Agenda -->
                 <div class="glass-card form-container" style="margin-top:15px; margin-bottom:20px;">
                     <h3 style="font-size:15px; font-weight:600; margin-bottom:6px;">📅 Exportar para Google Agenda</h3>
@@ -544,6 +560,9 @@
     </div>
 
     <script src="js/storage.js"></script>
+    <script src="js/google-config.js"></script>
+    <script src="js/google-sync.js"></script>
+    <script src="js/google-form-sync.js"></script>
     <script src="js/app.js"></script>
     <script src="js/finance.js"></script>
     <script src="js/calendar.js"></script>
