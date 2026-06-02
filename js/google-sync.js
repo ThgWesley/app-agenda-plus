@@ -7,8 +7,6 @@ const GoogleSync = {
     REDIRECT_URI: 'https://thgwesley.github.io/app-agenda-plus/',
     SCOPES: 'https://www.googleapis.com/auth/calendar',
     
-    // ===== AUTENTICAÇÃO =====
-    
     startAuth: function() {
         const state = Math.random().toString(36).substring(7);
         localStorage.setItem('oauth_state', state);
@@ -55,8 +53,6 @@ const GoogleSync = {
         console.log('❌ Desconectado');
     },
     
-    // ===== SINCRONIZAR =====
-    
     syncAllEvents: function() {
         if (!this.isConnected()) {
             alert('Conecte ao Google primeiro!');
@@ -88,23 +84,17 @@ const GoogleSync = {
     createEvent: function(client) {
         const token = localStorage.getItem('google_access_token');
         
-        const date = new Date(client.date);
-        const startDateTime = new Date(date);
-        startDateTime.setHours(9, 0, 0);
-        
-        const endDateTime = new Date(date);
-        endDateTime.setHours(10, 0, 0);
+        // Usar apenas a data, sem conversão de hora
+        const [year, month, day] = client.date.split('-');
         
         const event = {
             summary: `${client.clientName} - ${client.kitName}`,
             description: `Valor: R$ ${client.value}\nStatus: ${client.status}\nCategoria: ${client.category}`,
             start: {
-                dateTime: startDateTime.toISOString(),
-                timeZone: 'America/Sao_Paulo'
+                date: client.date
             },
             end: {
-                dateTime: endDateTime.toISOString(),
-                timeZone: 'America/Sao_Paulo'
+                date: client.date
             }
         };
         
@@ -128,7 +118,6 @@ const GoogleSync = {
     }
 };
 
-// Processa callback ao carregar
 document.addEventListener('DOMContentLoaded', () => {
     if (GoogleSync.handleCallback()) {
         location.reload();
