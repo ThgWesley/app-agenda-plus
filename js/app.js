@@ -23,6 +23,11 @@ const App = {
             
             clients = clients.filter(c => c.id !== id);
             Storage.set('clients', clients);
+            
+            // Atualiza backup
+            if (GoogleConfig.isConnected()) {
+                GoogleSync.updateBackupFile();
+            }
 
             if(typeof renderCalendar === 'function') renderCalendar();
             if(typeof renderClients === 'function') renderClients();
@@ -42,7 +47,7 @@ function updateGoogleSyncUI() {
     
     if (isConnected) {
         statusDiv.style.display = 'block';
-        statusMsg.textContent = '✅ Status: Conectado ao Google Calendar';
+        statusMsg.textContent = '✅ Status: Conectado a Google (Agenda + Drive)';
         btnConnect.style.display = 'none';
         btnSyncAll.style.display = 'block';
         btnDisconnect.style.display = 'block';
