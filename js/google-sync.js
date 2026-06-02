@@ -3,7 +3,7 @@
 // ============================================
 
 const GoogleSync = {
-    CLIENT_ID: '1043225940082-uqvh1rj7m76smmf36k2ivjdvj998506s.apps.googleusercontent.com',
+    CLIENT_ID: '1043225940082-0slf91qvm2njm0t8450dtpk8iomsgosm.apps.googleusercontent.com',
     REDIRECT_URI: 'https://thgwesley.github.io/app-agenda-plus/',
     SCOPES: 'https://www.googleapis.com/auth/calendar',
     
